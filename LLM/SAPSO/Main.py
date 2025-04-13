@@ -4,8 +4,9 @@ import matplotlib.pyplot as plt
 
 from LLM.RL.ActorCritic.Agent import SACAgent
 from LLM.RL.Replay.ReplayBuffer import ReplayBuffer
-from LLM.SAPSO.PSOVisualizer import plot_parameter_trajectory, animate_swarm
+from LLM.SAPSO.PSOVisualizer import plot_parameter_trajectory, animate_swarm, plot_swarm_metrics
 from LLM.SAPSO.PSO_GYM import PSOEnv
+# from LLM.Visualizer import plot_swarm_metrics
 
 
 def main():
@@ -19,7 +20,7 @@ def main():
     buffer = ReplayBuffer(1_000_000, state_dim, action_dim, device=device)
 
     # === Training Hyperparameters ===
-    num_episodes = 200
+    num_episodes = 100
     batch_size = 256
     start_steps = 1000  # initial random exploration
     updates_per_step = 1
@@ -61,6 +62,7 @@ def main():
     plt.show()
 
     plot_parameter_trajectory(env.history)
+    plot_swarm_metrics(env.history)
     animate_swarm(env)
 
 

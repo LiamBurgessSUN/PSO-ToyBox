@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import animation
 
+
 class SwarmVisualizer:
     def __init__(self, swarm, interval=100):
         self.swarm = swarm
@@ -91,3 +92,26 @@ class SwarmVisualizer:
     def _animate_step(self, steps_fn):
         steps_fn()  # perform one step (e.g., swarm.optimize_step(...))
         self._update_plot(None)
+
+
+def plot_swarm_metrics(history):
+    timesteps = list(range(len(history)))
+    diversity = [h["diversity"] for h in history]
+    velocity = [h["velocity"] for h in history]
+
+    fig, axs = plt.subplots(2, 1, figsize=(10, 6), sharex=True)
+
+    axs[0].plot(timesteps, diversity, label="Swarm Diversity", color='purple')
+    axs[0].set_ylabel("Diversity")
+    axs[0].grid(True)
+    axs[0].legend()
+
+    axs[1].plot(timesteps, velocity, label="Avg Velocity", color='orange')
+    axs[1].set_ylabel("Velocity")
+    axs[1].set_xlabel("Timestep")
+    axs[1].grid(True)
+    axs[1].legend()
+
+    plt.suptitle("Swarm Metrics Over Time")
+    plt.tight_layout()
+    plt.show()

@@ -4,6 +4,8 @@ import numpy as np
 from LLM.PSO.PSO import PSO
 from LLM.PSO.ObjectiveFunctions.Rastrgin import RastriginFunction
 from LLM.PSO.Cognitive.LBest import LocalBestStrategy
+from LLM.SwarmMetrics import compute_swarm_metrics
+
 
 class PSOEnv(gym.Env):
     def __init__(self, dim=30, num_particles=30, max_steps=100):
@@ -57,6 +59,7 @@ class PSOEnv(gym.Env):
         self.last_gbest = gbest
 
         obs = self._get_obs(metrics, gbest)
+        swarm_stats = compute_swarm_metrics(self.pso.particles)
         self.history.append({
             "step": self.current_step,
             "omega": float(omega),
@@ -64,8 +67,11 @@ class PSOEnv(gym.Env):
             "c2": float(c2),
             "gbest": gbest,
             "metrics": metrics,
-            "positions": [p.position.copy() for p in self.pso.particles]
+            "positions": [p.position.copy() for p in self.pso.particles],
+            "diversity": swarm_stats["diversity"],
+            "velocity": swarm_stats["velocity"]
         })
+
         done = self.current_step >= self.max_steps
 
         return obs, reward, done, False, {}

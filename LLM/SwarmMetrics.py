@@ -36,3 +36,18 @@ class SwarmMetrics:
     def _stability_ratio(particles, _):
         stable = sum(1 for p in particles if np.linalg.norm(p.velocity) < 1e-3)
         return stable / len(particles)
+
+
+def compute_swarm_metrics(particles):
+    positions = np.array([p.position for p in particles])
+    velocities = np.array([p.velocity for p in particles])
+
+    centroid = np.mean(positions, axis=0)
+    diversity = np.mean(np.linalg.norm(positions - centroid, axis=1))
+
+    velocity_magnitude = np.mean(np.linalg.norm(velocities, axis=1))
+
+    return {
+        "diversity": diversity,
+        "velocity": velocity_magnitude
+    }
