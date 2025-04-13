@@ -11,7 +11,7 @@ if not hasattr(np, 'bool8'):
 
 def main():
     # === ENV & SEEDING ===
-    env = gym.make("Pendulum-v1", render_mode="human")
+    env = gym.make("Pendulum-v1")
     seed = 42
     env.reset(seed=seed)
     torch.manual_seed(seed)
@@ -23,7 +23,8 @@ def main():
 
     # === AGENT & REPLAY BUFFER ===
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    agent = SACAgent(state_dim, action_dim, device=device)
+    print(f"Using device: {device}")
+    agent = SACAgent(state_dim, action_dim, device="cuda")
     buffer = ReplayBuffer(capacity=1_000_000, state_dim=state_dim, action_dim=action_dim, device=device)
 
     # === HYPERPARAMETERS ===
@@ -41,8 +42,8 @@ def main():
         state, _ = env.reset()
         episode_reward = 0
 
-        if episode % 5 == 0:
-            env.render()
+        # if episode % 5 == 0:
+        #     env.render()
 
         for t in range(max_steps):
             # Explore initially, then use policy
