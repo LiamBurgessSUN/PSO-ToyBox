@@ -29,7 +29,7 @@ if __name__ == "__main__":
     obj_func = TrigonometricFunction(dim=2, num_particles=20)  # Must be 2D
     obj_func.plot_3d_surface()
     swarm = PSO(obj_func, strategy=LocalBestStrategy())
-    swarm.strategy.swarm = swarm  # backref
+    swarm.kb_sharing_strat.swarm = swarm  # backref
 
     visualizer = SwarmVisualizer(swarm)
 

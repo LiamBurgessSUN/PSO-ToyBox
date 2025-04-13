@@ -15,7 +15,7 @@ class PSO:
                  strategy: KnowledgeSharingStrategy,
                  v_clamp_ratio=0.1, use_velocity_clamping=True):
         self.objective_function = objective_function
-        self.strategy = strategy
+        self.kb_sharing_strat = strategy
         self.dim = objective_function.dim
         self.bounds = objective_function.bounds
         self.particles = [
@@ -54,7 +54,7 @@ class PSO:
         r1 = np.random.rand(particle.dim)
         r2 = np.random.rand(particle.dim)
         cognitive = c1 * r1 * (particle.pbest_position - particle.position)
-        social_target = self.strategy.get_best_position(particle, self.particles)
+        social_target = self.kb_sharing_strat.get_best_position(particle, self.particles)
         social = c2 * r2 * (social_target - particle.position)
         particle.velocity = omega * particle.velocity + cognitive + social
 

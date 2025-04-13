@@ -19,7 +19,7 @@ class PSOEnv(gym.Env):
         self.obj_fn = RastriginFunction(dim=dim, num_particles=num_particles)
         self.strategy = LocalBestStrategy(neighborhood_size=2)
         self.pso = PSO(self.obj_fn, self.strategy)
-        self.pso.strategy.swarm = self.pso  # backref
+        self.pso.kb_sharing_strat.swarm = self.pso  # backref
 
         # === Observation Space ===
         # avg_velocity, feasible_ratio, stable_ratio, normalized gbest
@@ -43,7 +43,7 @@ class PSOEnv(gym.Env):
         self.current_step = 0
         self.obj_fn = RastriginFunction(dim=self.obj_fn.dim, num_particles=self.obj_fn.num_particles)
         self.pso = PSO(self.obj_fn, self.strategy)
-        self.pso.strategy.swarm = self.pso
+        self.pso.kb_sharing_strat.swarm = self.pso
 
         metrics, gbest = self.pso.optimize_step(omega=0.5, c1=1.0, c2=1.0)
         self.last_gbest = gbest
