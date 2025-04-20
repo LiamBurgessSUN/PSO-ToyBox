@@ -2,7 +2,7 @@ import gym
 import numpy as np
 
 from LLM.PSO.PSO import PSO
-from LLM.PSO.ObjectiveFunctions.Rastrgin import RastriginFunction
+from LLM.PSO.ObjectiveFunctions.Training.Rastrgin import RastriginFunction
 from LLM.PSO.Cognitive.LBest import LocalBestStrategy
 from LLM.SwarmMetrics import compute_swarm_metrics
 

@@ -2,10 +2,9 @@
 import gym
 import numpy as np
 import math
-import copy # Needed for deep copying pso state if required
 
 from LLM.PSO.PSO import PSO
-from LLM.PSO.ObjectiveFunctions.Rastrgin import RastriginFunction # Example function
+from LLM.PSO.ObjectiveFunctions.Training.Rastrgin import RastriginFunction # Example function
 from LLM.PSO.Cognitive.LBest import LocalBestStrategy
 # Assuming compute_swarm_metrics is available, e.g., from SwarmMetrics
 from LLM.SwarmMetrics import SwarmMetrics, compute_swarm_metrics

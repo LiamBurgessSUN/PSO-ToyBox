@@ -6,7 +6,7 @@ import time
 import collections # Import collections for defaultdict
 
 # Assuming these imports are correctly set up based on your project structure
-from LLM.PSO.ObjectiveFunctions.Rastrgin import RastriginFunction
+from LLM.PSO.ObjectiveFunctions.Training.Rastrgin import RastriginFunction
 from LLM.RL.ActorCritic.Agent import SACAgent
 from LLM.RL.Replay.ReplayBuffer import ReplayBuffer
 from LLM.SAPSO.Gyms.PSO_GymV2 import PSOEnv # Use the modified PSOEnv

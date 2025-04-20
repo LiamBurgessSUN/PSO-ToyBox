@@ -1,13 +1,9 @@
 import numpy as np
 
-from LLM.PSO.Cognitive.GBest import GlobalBestStrategy
-from LLM.PSO.Cognitive.LBest import LocalBestStrategy
 from LLM.PSO.Cognitive.PositionSharing import KnowledgeSharingStrategy
-from LLM.PSO.ObjectiveFunctions.ObjectiveFunction import ObjectiveFunction
-from LLM.PSO.ObjectiveFunctions.Rastrgin import RastriginFunction
+from LLM.PSO.ObjectiveFunctions.Training.ObjectiveFunction import ObjectiveFunction
 from LLM.PSO.Particle import Particle
 from LLM.SwarmMetrics import SwarmMetrics
-from LLM.Visualizer import SwarmVisualizer
 
 
 class PSO:
