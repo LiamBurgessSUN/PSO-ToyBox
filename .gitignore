@@ -173,3 +173,5 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 /LLM/RL/Environment/Gym/sac_pendulum_checkpoint.pth
+/LLM/SAPSO/mains/checkpoints/
+/LLM/SAPSO/mains/checkpoints_sapso/

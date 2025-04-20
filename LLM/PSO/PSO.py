@@ -77,7 +77,6 @@ class PSO:
             'stable_ratio': stable / len(self.particles)
         }
 
-
 # # --- Example Usage ---
 # if __name__ == "__main__":
 #     rastrigin = RastriginFunction()
@@ -100,5 +99,3 @@ class PSO:
 #               f"Avg Velocity = {metrics['avg_velocity']:.3f}, "
 #               f"Feasible = {metrics['feasible_ratio']:.1%}, "
 #               f"Stable = {metrics['stable_ratio']:.1%}")
-
-

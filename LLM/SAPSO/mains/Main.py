@@ -1,11 +1,10 @@
 import torch
-import numpy as np
 import matplotlib.pyplot as plt
 
 from LLM.RL.ActorCritic.Agent import SACAgent
 from LLM.RL.Replay.ReplayBuffer import ReplayBuffer
 from LLM.SAPSO.PSOVisualizer import plot_parameter_trajectory, animate_swarm, plot_swarm_metrics
-from LLM.SAPSO.PSO_GYM import PSOEnv
+from LLM.SAPSO.Gyms.PSO_GYM import PSOEnv
 # from LLM.Visualizer import plot_swarm_metrics
 
 
