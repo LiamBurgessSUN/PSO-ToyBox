@@ -175,3 +175,4 @@ cython_debug/
 /LLM/RL/Environment/Gym/sac_pendulum_checkpoint.pth
 /LLM/SAPSO/mains/checkpoints/
 /LLM/SAPSO/mains/checkpoints_sapso/
+/LLM/Benchmark/models/checkpoints_sapso_trained_static/
