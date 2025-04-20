@@ -218,7 +218,10 @@ def train_agent(
                     max_steps=env_max_steps,
                     agent_step_size=agent_step_size,
                     adaptive_nt=adaptive_nt_mode,
-                    nt_range=nt_range
+                    nt_range=nt_range,
+                    convergence_patience=50,
+                    convergence_threshold_gbest=1e-8,
+                    convergence_threshold_pbest_std=1e-6
                 )
                 state, _ = train_env.reset(seed=total_episodes_run)
 

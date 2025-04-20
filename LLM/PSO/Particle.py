@@ -11,3 +11,7 @@ class Particle:
 
         self.pbest_position = self.position.copy()
         self.pbest_value = float('inf')
+
+        self.is_active = True  # Add this attribute
+        self.stagnation_counter = 0  # Optional: for stagnation condition
+        self.velocity_threshold_counter = 0  # Optional: for velocity condition
