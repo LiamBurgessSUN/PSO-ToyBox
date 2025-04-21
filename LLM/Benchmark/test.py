@@ -4,10 +4,8 @@
 
 import torch
 import numpy as np
-import matplotlib.pyplot as plt
 import os
 import time
-import random
 import sys
 import collections
 from pathlib import Path
@@ -16,7 +14,7 @@ from pathlib import Path
 try:
     from LLM.RL.ActorCritic.Agent import SACAgent
     from LLM.SAPSO.Gyms.PSO_GymV2 import PSOEnv
-    from LLM.PSO.ObjectiveFunctions.Training.ObjectiveFunction import ObjectiveFunction # Base class needed
+    from LLM.PSO.ObjectiveFunctions.ObjectiveFunction import ObjectiveFunction # Base class needed
     # Import plotting functions
     from LLM.SAPSO.graphics.graphing import (
         plot_evaluation_parameters,

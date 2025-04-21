@@ -1,7 +1,7 @@
 # --- Rastrigin Function Implementation ---
 import numpy as np
 
-from LLM.PSO.ObjectiveFunctions.Training.ObjectiveFunction import ObjectiveFunction
+from LLM.PSO.ObjectiveFunctions.ObjectiveFunction import ObjectiveFunction
 
 
 class RastriginFunction(ObjectiveFunction):

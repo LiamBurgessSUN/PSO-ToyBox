@@ -4,14 +4,15 @@ import collections # Needed for deque
 
 # Make sure necessary imports are present
 from LLM.PSO.Cognitive.PositionSharing import KnowledgeSharingStrategy
-from LLM.PSO.ObjectiveFunctions.Training.ObjectiveFunction import ObjectiveFunction
+from LLM.PSO.ObjectiveFunctions.ObjectiveFunction import ObjectiveFunction
 from LLM.PSO.Particle import Particle
-from LLM.SwarmMetrics import SwarmMetrics # Assuming SwarmMetrics is in this path
+from LLM.PSO.Metrics.SwarmMetrics import SwarmMetrics # Assuming SwarmMetrics is in this path
 
 class PSO:
     def __init__(self, objective_function: ObjectiveFunction,
                  strategy: KnowledgeSharingStrategy,
-                 v_clamp_ratio=0.1, use_velocity_clamping=True,
+                 v_clamp_ratio=0.1,
+                 use_velocity_clamping=True,
                  # --- Add Convergence Parameters ---
                  convergence_patience=50,          # Steps gbest must stagnate
                  convergence_threshold_gbest=1e-8, # Max gbest improvement to be considered stagnant

@@ -9,7 +9,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import time
-import random
 import sys
 from pathlib import Path
 
@@ -19,7 +18,7 @@ try:
     from LLM.RL.Replay.ReplayBuffer import ReplayBuffer
     from LLM.SAPSO.Gyms.PSO_GymV2 import PSOEnv
     # Import base class
-    from LLM.PSO.ObjectiveFunctions.Training.ObjectiveFunction import ObjectiveFunction
+    from LLM.PSO.ObjectiveFunctions.ObjectiveFunction import ObjectiveFunction
     # --- Static Imports for Training Objective Functions ---
     from LLM.PSO.ObjectiveFunctions.Training.Ackley import AckleyFunction
     from LLM.PSO.ObjectiveFunctions.Training.Alpine import AlpineFunction

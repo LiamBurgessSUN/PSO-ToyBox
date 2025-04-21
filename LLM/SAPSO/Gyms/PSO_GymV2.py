@@ -3,7 +3,6 @@
 import gym
 import numpy as np
 import math
-import collections # Import needed if not already present
 
 # Assuming these imports are correctly set up based on your project structure
 # Use the modified PSO class that returns the 'converged' flag
@@ -12,7 +11,7 @@ from LLM.PSO.PSO import PSO
 from LLM.PSO.ObjectiveFunctions.Training.Rastrgin import RastriginFunction
 from LLM.PSO.Cognitive.LBest import LocalBestStrategy
 # Assuming SwarmMetrics and compute_swarm_metrics are available
-from LLM.SwarmMetrics import SwarmMetrics, compute_swarm_metrics
+from LLM.PSO.Metrics.SwarmMetrics import SwarmMetrics, compute_swarm_metrics
 
 class PSOEnv(gym.Env):
     """
