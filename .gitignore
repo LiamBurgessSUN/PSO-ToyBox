@@ -176,3 +176,4 @@ cython_debug/
 /LLM/SAPSO/mains/checkpoints/
 /LLM/SAPSO/mains/checkpoints_sapso/
 /LLM/Benchmark/models/checkpoints_sapso_trained_static/
+/LLM/Benchmark/models/
