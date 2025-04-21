@@ -3,27 +3,24 @@ import numpy as np
 import collections
 import time # Optional: for basic timing comparison
 
+# Import the vectorized metrics calculator
+# Assuming it's saved in LLM/PSO/Metrics/SwarmMetricsVectorized.py
 from LLM.PSO.Metrics.SwarmMetricsVectorized import SwarmMetricsVectorized
 
 
-# Import the vectorized metrics calculator
-# Assuming it's saved in LLM.SwarmMetricsVectorized
-# If the file path is different, adjust the import accordingly.
-
-
-
 # Assuming ObjectiveFunction and KnowledgeSharingStrategy base classes exist
-# from LLM.PSO.ObjectiveFunctions.Training.ObjectiveFunction import ObjectiveFunction
-# from LLM.PSO.Cognitive.PositionSharing import KnowledgeSharingStrategy
+from LLM.PSO.ObjectiveFunctions.ObjectiveFunction import ObjectiveFunction
+from LLM.PSO.Cognitive.PositionSharing import KnowledgeSharingStrategy
 # NOTE: This implementation implicitly uses G-Best strategy due to vectorization simplicity.
 
 class PSOVectorized:
     """
     A vectorized implementation of Particle Swarm Optimization using NumPy arrays.
     Uses an external SwarmMetricsVectorized class for metric calculations.
+    Dynamically uses objective_function.evaluate_matrix if available.
 
     Attributes:
-        objective_function: The function to minimize.
+        objective_function: The function to minimize (should have evaluate, optionally evaluate_matrix).
         num_particles (int): Number of particles in the swarm.
         dim (int): Dimension of the search space.
         bounds (tuple): Lower and upper bounds for particle positions (lower, upper).
@@ -44,7 +41,8 @@ class PSOVectorized:
     """
     def __init__(self, objective_function, num_particles,
                  strategy=None, # Strategy object kept for compatibility
-                 v_clamp_ratio=0.2, use_velocity_clamping=True,
+                 v_clamp_ratio=0.2,
+                 use_velocity_clamping=True,
                  convergence_patience=50,
                  convergence_threshold_gbest=1e-8,
                  convergence_threshold_pbest_std=1e-6,
@@ -52,17 +50,6 @@ class PSOVectorized:
                  ):
         """
         Initializes the vectorized PSO algorithm.
-
-        Args:
-            objective_function: An object with `dim`, `bounds`, and `evaluate` method.
-            num_particles (int): The number of particles in the swarm.
-            strategy: Knowledge sharing strategy (Note: G-Best assumed here).
-            v_clamp_ratio (float): Ratio of search space range for velocity clamping.
-            use_velocity_clamping (bool): Flag to enable/disable velocity clamping.
-            convergence_patience (int): Steps for gbest stagnation check.
-            convergence_threshold_gbest (float): Threshold for gbest improvement.
-            convergence_threshold_pbest_std (float): Threshold for pbest standard deviation.
-            stability_threshold (float): Velocity threshold for stability metric.
         """
         self.objective_function = objective_function
         self.num_particles = num_particles
@@ -74,17 +61,30 @@ class PSOVectorized:
         self.positions = np.random.uniform(low=self.bounds[0], high=self.bounds[1], size=(self.num_particles, self.dim))
         self.velocities = np.zeros((self.num_particles, self.dim))
 
-        # Initialize personal bests
+        # Initialize personal bests using the standard evaluate method
         self.pbest_positions = self.positions.copy()
-        self.pbest_values = np.array([self.objective_function.evaluate(p) for p in self.positions])
+        try:
+            self.pbest_values = np.array([self.objective_function.evaluate(p) for p in self.positions])
+        except Exception as e:
+            print(f"Error during initial pbest evaluation: {e}. Initializing pbest values to infinity.")
+            self.pbest_values = np.full(self.num_particles, np.inf)
+
         if not np.all(np.isfinite(self.pbest_values)):
              print("Warning: Non-finite initial pbest values detected. Replacing with inf.")
              self.pbest_values[~np.isfinite(self.pbest_values)] = np.inf
 
         # Initialize global best
         min_idx = np.argmin(self.pbest_values)
-        self.gbest_position = self.pbest_positions[min_idx].copy()
-        self.gbest_value = self.pbest_values[min_idx]
+        # Ensure min_idx is valid before accessing arrays
+        if len(self.pbest_values) > 0 and np.isfinite(self.pbest_values[min_idx]):
+             self.gbest_position = self.pbest_positions[min_idx].copy()
+             self.gbest_value = self.pbest_values[min_idx]
+        else:
+             # Fallback if initial evaluation failed or resulted in all inf
+             self.gbest_position = self.positions[0].copy() # Use first particle's position
+             self.gbest_value = np.inf
+             print("Warning: Could not determine initial gbest from pbest values. Initializing gbest to inf.")
+
 
         # --- Velocity Clamping Setup ---
         self.use_velocity_clamping = use_velocity_clamping
@@ -142,16 +142,27 @@ class PSOVectorized:
         self.positions = np.clip(self.positions, self.bounds[0], self.bounds[1])
 
         # --- Evaluate New Positions ---
-        try:
-            # Fallback: Loop if evaluate expects single vector
-            fitness_values = np.array([self.objective_function.evaluate(p) for p in self.positions])
-            # NOTE: Replace loop above with below line if objective_function supports matrix evaluation
-            # fitness_values = self.objective_function.evaluate(self.positions)
-        except Exception as e:
-             # Fallback loop if vectorized attempt fails or is not implemented
-             fitness_values = np.array([self.objective_function.evaluate(p) for p in self.positions])
+        # Check if the objective function has a vectorized 'evaluate_matrix' method
+        if hasattr(self.objective_function, 'evaluate_matrix') and callable(self.objective_function.evaluate_matrix):
+            try:
+                fitness_values = self.objective_function.evaluate_matrix(self.positions)
+                # Basic check for expected output shape
+                if fitness_values.shape != (self.num_particles,):
+                     print(f"Warning: evaluate_matrix returned unexpected shape {fitness_values.shape}. Expected ({self.num_particles},). Falling back to loop.")
+                     fitness_values = np.array([self.objective_function.evaluate(p) for p in self.positions])
 
+            except Exception as e:
+                print(f"Error during vectorized evaluation: {e}. Falling back to loop.")
+                fitness_values = np.array([self.objective_function.evaluate(p) for p in self.positions])
+        else:
+            # Fallback: Loop if evaluate_matrix is not available
+            # print("Debug: evaluate_matrix not found, using loop evaluation.") # Optional debug
+            fitness_values = np.array([self.objective_function.evaluate(p) for p in self.positions])
+
+
+        # Handle potential non-finite values from evaluation
         if not np.all(np.isfinite(fitness_values)):
+             # print("Warning: Non-finite fitness values detected during evaluation. Replacing with inf.") # Optional debug
              fitness_values[~np.isfinite(fitness_values)] = np.inf
 
         # --- Update Personal Bests (Vectorized) ---
@@ -161,11 +172,13 @@ class PSOVectorized:
 
         # --- Update Global Best ---
         current_min_idx = np.argmin(self.pbest_values)
-        current_gbest_value = self.pbest_values[current_min_idx]
-
-        if current_gbest_value < self.gbest_value:
-            self.gbest_value = current_gbest_value
-            self.gbest_position = self.pbest_positions[current_min_idx].copy()
+        # Check if the best value is actually finite before updating
+        if np.isfinite(self.pbest_values[current_min_idx]):
+             current_gbest_value = self.pbest_values[current_min_idx]
+             if current_gbest_value < self.gbest_value:
+                 self.gbest_value = current_gbest_value
+                 self.gbest_position = self.pbest_positions[current_min_idx].copy()
+        # else: gbest remains unchanged if all pbest values are infinite
 
         # --- Track GBest History for Stagnation Check ---
         self._gbest_history.append(self.gbest_value)
@@ -180,8 +193,6 @@ class PSOVectorized:
 
         return metrics, self.gbest_value, converged
 
-    # Removed internal _calculate_metrics method
-
     def _check_convergence(self) -> bool:
         """
         Checks if the swarm has converged based on diversity and gbest stagnation.
@@ -190,11 +201,18 @@ class PSOVectorized:
         # 1. Check GBest Stagnation
         gbest_stagnated = False
         if len(self._gbest_history) == self.convergence_patience:
-            improvement = self._gbest_history[0] - self.gbest_value
-            if improvement < self.convergence_threshold_gbest and not np.isclose(improvement, self.convergence_threshold_gbest):
-                 self._stagnation_counter += 1
+            # Ensure history contains finite values before comparing
+            history_start_val = self._gbest_history[0]
+            if np.isfinite(history_start_val) and np.isfinite(self.gbest_value):
+                 improvement = history_start_val - self.gbest_value
+                 # Check if improvement is less than threshold (allow for floating point issues)
+                 if improvement < self.convergence_threshold_gbest and not np.isclose(improvement, self.convergence_threshold_gbest):
+                     self._stagnation_counter += 1
+                 else:
+                     self._stagnation_counter = 0 # Reset if significant improvement or non-finite values
             else:
-                 self._stagnation_counter = 0 # Reset if significant improvement
+                 # If values are non-finite, reset stagnation (cannot determine improvement)
+                 self._stagnation_counter = 0
 
             if self._stagnation_counter >= self.convergence_patience:
                  gbest_stagnated = True
@@ -204,6 +222,7 @@ class PSOVectorized:
         # 2. Check Swarm Diversity (using std dev of pbest values)
         finite_pbest_values = self.pbest_values[np.isfinite(self.pbest_values)]
         if len(finite_pbest_values) < 2:
+            # Consider non-diverse if only one finite pbest or gbest has stagnated severely
             diversity_low = gbest_stagnated
         else:
             pbest_std_dev = np.std(finite_pbest_values)
@@ -211,6 +230,7 @@ class PSOVectorized:
 
         # 3. Combine Conditions
         if gbest_stagnated and diversity_low:
+            # print(f"Convergence detected: GBest Stagnated ({self._stagnation_counter} steps) & PBest Std Dev ({pbest_std_dev:.2e}) low.") # Optional debug
             return True
 
         return False
