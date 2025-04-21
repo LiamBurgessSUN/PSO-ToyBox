@@ -58,3 +58,35 @@ class PinterFunction(ObjectiveFunction):
 
         # Combine the terms
         return sum1 + sum2 + sum3
+
+    # --- Method for PinterFunction ---
+    # Add to PSO-ToyBox/LLM/PSO/ObjectiveFunctions/Training/Pinter.py
+    def evaluate_matrix(self, x_matrix: np.ndarray) -> np.ndarray:
+        """ Vectorized evaluation for Pinter function. """
+        # x_matrix shape: (num_particles, dim)
+        num_particles, dim = x_matrix.shape
+        if dim != self.dim:
+            pass  # Handle dim mismatch
+
+        j_indices = np.arange(1, self.dim + 1)  # Shape: (dim,)
+
+        # Use np.roll for circular indexing (j-1 and j+1)
+        x_jm1 = np.roll(x_matrix, 1, axis=1)  # x[j-1] equivalent
+        x_jp1 = np.roll(x_matrix, -1, axis=1)  # x[j+1] equivalent
+
+        # Term 1: Sum of j * x_j^2
+        term1_sum = np.sum(j_indices * x_matrix ** 2, axis=1)  # Shape: (num_particles,)
+
+        # Term 2: Sum involving sin of A^2
+        A = x_jm1 * np.sin(x_matrix) + np.sin(x_jp1)  # Shape: (num_particles, dim)
+        term2_sum = np.sum(20.0 * j_indices * np.sin(A ** 2), axis=1)  # Shape: (num_particles,)
+
+        # Term 3: Sum involving log10 of (1 + j * B^2)
+        B = x_jm1 ** 2 - 2.0 * x_matrix + 3.0 * x_jp1 - np.cos(x_matrix) + 1.0  # Shape: (num_particles, dim)
+        log_arg = 1.0 + j_indices * B ** 2
+        # Ensure argument for log10 is positive
+        log_arg = np.maximum(log_arg, np.finfo(float).eps)  # Replace non-positive with small value
+        term3_sum = np.sum(j_indices * np.log10(log_arg), axis=1)  # Shape: (num_particles,)
+
+        fitness_values = term1_sum + term2_sum + term3_sum
+        return fitness_values  # Shape: (num_particles,)

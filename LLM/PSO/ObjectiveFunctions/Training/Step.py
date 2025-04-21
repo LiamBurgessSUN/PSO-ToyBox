@@ -10,3 +10,13 @@ class StepFunction3(ObjectiveFunction):
 
     def evaluate(self, x: np.ndarray) -> float:
         return np.sum(np.floor(np.abs(x)))
+
+    # --- Method for StepFunction3 ---
+    # Add to PSO-ToyBox/LLM/PSO/ObjectiveFunctions/Training/Step.py
+    def evaluate_matrix(self, x_matrix: np.ndarray) -> np.ndarray:
+        """ Vectorized evaluation for Step N. 3 function. """
+        # x_matrix shape: (num_particles, dim)
+        # np.floor works element-wise
+        term = np.floor(np.abs(x_matrix))  # Shape: (num_particles, dim)
+        fitness_values = np.sum(term, axis=1)  # Shape: (num_particles,)
+        return fitness_values

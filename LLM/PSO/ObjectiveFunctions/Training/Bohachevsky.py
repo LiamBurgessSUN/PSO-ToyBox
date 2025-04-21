@@ -22,3 +22,20 @@ class BohachevskyFunction(ObjectiveFunction):
             )
             total += term
         return total
+
+    # --- Method for BohachevskyFunction ---
+    # Add to PSO-ToyBox/LLM/PSO/ObjectiveFunctions/Training/Bohachevsky.py
+    def evaluate_matrix(self, x_matrix: np.ndarray) -> np.ndarray:
+        """ Vectorized evaluation for Bohachevsky function. """
+        # x_matrix shape: (num_particles, dim)
+        x_j = x_matrix[:, :-1]  # Shape: (num_particles, dim-1)
+        x_j_plus_1 = x_matrix[:, 1:]  # Shape: (num_particles, dim-1)
+
+        term = (x_j ** 2 +
+                2 * x_j_plus_1 ** 2 -
+                0.3 * np.cos(3 * np.pi * x_j) -
+                0.4 * np.cos(4 * np.pi * x_j_plus_1) +
+                0.7)  # Shape: (num_particles, dim-1)
+
+        fitness_values = np.sum(term, axis=1)  # Shape: (num_particles,)
+        return fitness_values

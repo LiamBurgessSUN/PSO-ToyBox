@@ -38,3 +38,25 @@ class ObjectiveFunction(ABC):
 
         plt.show()
 
+    @abstractmethod
+    def evaluate_matrix(self, x_matrix: np.ndarray) -> np.ndarray:
+        """
+        Evaluates the objective function for multiple particle positions simultaneously.
+
+        Args:
+            x_matrix (np.ndarray): A 2D NumPy array where each row represents a
+                                   particle's position vector.
+                                   Shape: (num_particles, dim).
+
+        Returns:
+            np.ndarray: A 1D NumPy array containing the fitness value for each
+                        particle position in the input matrix.
+                        Shape: (num_particles,).
+        """
+        # Default implementation raises NotImplementedError if a subclass
+        # doesn't override it but is called.
+        # Alternatively, subclasses can implement this, or you could provide
+        # a default implementation that loops through evaluate() if desired,
+        # though that defeats the purpose of vectorization.
+        raise NotImplementedError("Subclasses must implement the vectorized evaluate_matrix method.")
+

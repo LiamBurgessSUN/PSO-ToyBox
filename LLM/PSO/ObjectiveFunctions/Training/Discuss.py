@@ -10,3 +10,14 @@ class DiscussFunction(ObjectiveFunction):
 
     def evaluate(self, x: np.ndarray) -> float:
         return 1e6 * x[0] ** 2 + np.sum(x[1:] ** 2)
+
+    # --- Method for DiscussFunction ---
+    # Add to PSO-ToyBox/LLM/PSO/ObjectiveFunctions/Training/Discuss.py
+    def evaluate_matrix(self, x_matrix: np.ndarray) -> np.ndarray:
+        """ Vectorized evaluation for Discuss function. """
+        # x_matrix shape: (num_particles, dim)
+        term1 = 1e6 * x_matrix[:, 0] ** 2  # Shape: (num_particles,) - First dimension only
+        # Sum remaining dimensions squared for each particle
+        term2 = np.sum(x_matrix[:, 1:] ** 2, axis=1)  # Shape: (num_particles,)
+        fitness_values = term1 + term2
+        return fitness_values

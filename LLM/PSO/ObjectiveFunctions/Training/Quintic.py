@@ -10,3 +10,14 @@ class QuinticFunction(ObjectiveFunction):
 
     def evaluate(self, x: np.ndarray) -> float:
         return np.sum(np.abs(x ** 5 - 3 * x ** 4 + 4 * x ** 3 + 2 * x ** 2 - 10 * x - 4))
+
+    # --- Method for QuinticFunction ---
+    # Add to PSO-ToyBox/LLM/PSO/ObjectiveFunctions/Training/Quintic.py
+    def evaluate_matrix(self, x_matrix: np.ndarray) -> np.ndarray:
+        """ Vectorized evaluation for Quintic function. """
+        # x_matrix shape: (num_particles, dim)
+        term = np.abs(
+            x_matrix ** 5 - 3.0 * x_matrix ** 4 + 4.0 * x_matrix ** 3 + 2.0 * x_matrix ** 2 - 10.0 * x_matrix - 4.0)
+        # Sum across dimensions for each particle
+        fitness_values = np.sum(term, axis=1)  # Shape: (num_particles,)
+        return fitness_values

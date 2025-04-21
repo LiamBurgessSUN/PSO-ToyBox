@@ -14,3 +14,12 @@ class AlpineFunction(ObjectiveFunction):
 
     def evaluate(self, x: np.ndarray) -> float:
         return np.sum(np.abs(x * np.sin(x) + 0.1 * x))
+
+    # --- Method for AlpineFunction ---
+    # Add to PSO-ToyBox/LLM/PSO/ObjectiveFunctions/Training/Alpine.py
+    def evaluate_matrix(self, x_matrix: np.ndarray) -> np.ndarray:
+        """ Vectorized evaluation for Alpine N. 1 function. """
+        # x_matrix shape: (num_particles, dim)
+        term = np.abs(x_matrix * np.sin(x_matrix) + 0.1 * x_matrix)  # Shape: (num_particles, dim)
+        fitness_values = np.sum(term, axis=1)  # Shape: (num_particles,)
+        return fitness_values

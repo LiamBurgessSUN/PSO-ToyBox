@@ -14,3 +14,14 @@ class AckleyFunction(ObjectiveFunction):
 
     def evaluate(self, x: np.ndarray) -> float:
         return -20 * np.exp(-0.2 * np.sqrt(np.sum(x ** 2) / self.dim)) - np.exp(np.sum(np.cos(2 * np.pi * x)) / self.dim) + 20 + np.e
+
+    # --- Method for AckleyFunction ---
+    # Add to PSO-ToyBox/LLM/PSO/ObjectiveFunctions/Training/Ackley.py
+    def evaluate_matrix(self, x_matrix: np.ndarray) -> np.ndarray:
+        """ Vectorized evaluation for Ackley function. """
+        # x_matrix shape: (num_particles, dim)
+        n = self.dim
+        term1 = -20.0 * np.exp(-0.2 * np.sqrt(np.sum(x_matrix ** 2, axis=1) / n))
+        term2 = -np.exp(np.sum(np.cos(2 * np.pi * x_matrix), axis=1) / n)
+        fitness_values = term1 + term2 + 20.0 + np.e
+        return fitness_values  # Shape: (num_particles,)
