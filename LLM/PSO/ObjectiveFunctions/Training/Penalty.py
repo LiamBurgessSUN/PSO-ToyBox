@@ -2,20 +2,6 @@ import numpy as np
 
 from LLM.PSO.ObjectiveFunctions.ObjectiveFunction import ObjectiveFunction
 
-
-# --- Methods for Penalty1Function ---
-# Add to PSO-ToyBox/LLM/PSO/ObjectiveFunctions/Training/Penalty.py
-# Vectorized helper function u
-def _u_vectorized(self, x_vec: np.ndarray) -> np.ndarray:
-    """ Vectorized version of the u penalty function. """
-    # x_vec shape: (num_particles,) or (num_particles, dim)
-    term1 = self.k * (x_vec - self.a) ** self.m
-    term2 = self.k * (-x_vec - self.a) ** self.m
-
-    result = np.where(x_vec > self.a, term1, 0.0)
-    result = np.where(x_vec < -self.a, term2, result)
-    return result
-
 class Penalty1Function(ObjectiveFunction):
     def __init__(self, dim=30, num_particles=30, a=10, k=100, m=4):
         super().__init__(dim, num_particles)
@@ -30,6 +16,19 @@ class Penalty1Function(ObjectiveFunction):
         elif xj < -self.a:
             return self.k * (-xj - self.a) ** self.m
         return 0
+
+    # --- Methods for Penalty1Function ---
+    # Add to PSO-ToyBox/LLM/PSO/ObjectiveFunctions/Training/Penalty.py
+    # Vectorized helper function u
+    def _u_vectorized(self, x_vec: np.ndarray) -> np.ndarray:
+        """ Vectorized version of the u penalty function. """
+        # x_vec shape: (num_particles,) or (num_particles, dim)
+        term1 = self.k * (x_vec - self.a) ** self.m
+        term2 = self.k * (-x_vec - self.a) ** self.m
+
+        result = np.where(x_vec > self.a, term1, 0.0)
+        result = np.where(x_vec < -self.a, term2, result)
+        return result
 
     def evaluate(self, x: np.ndarray) -> float:
         y = 1 + 0.25 * (x + 1)
@@ -80,6 +79,19 @@ class Penalty2Function(ObjectiveFunction):
         elif xj < -self.a:
             return self.k * (-xj - self.a) ** self.m
         return 0
+
+    # --- Methods for Penalty1Function ---
+    # Add to PSO-ToyBox/LLM/PSO/ObjectiveFunctions/Training/Penalty.py
+    # Vectorized helper function u
+    def _u_vectorized(self, x_vec: np.ndarray) -> np.ndarray:
+        """ Vectorized version of the u penalty function. """
+        # x_vec shape: (num_particles,) or (num_particles, dim)
+        term1 = self.k * (x_vec - self.a) ** self.m
+        term2 = self.k * (-x_vec - self.a) ** self.m
+
+        result = np.where(x_vec > self.a, term1, 0.0)
+        result = np.where(x_vec < -self.a, term2, result)
+        return result
 
     def evaluate(self, x: np.ndarray) -> float:
         term1 = 0.1 * np.sin(3 * np.pi * x[0]) ** 2
