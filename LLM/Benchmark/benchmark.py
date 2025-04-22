@@ -9,40 +9,11 @@ import traceback  # Import traceback for logging errors
 
 # --- Import Logger ---
 # Using the specified import path
-try:
-    from LLM.Logs import logger
-    # Import specific helper functions if they exist in logger module
-    # Assuming standard names like log_info, log_error etc.
-    from LLM.Logs.logger import log_info, log_error, log_warning, log_success, log_header, log
-except ImportError:
-    # Fallback print if logger fails to import - crucial for basic feedback
-    print("ERROR: Logger module not found at 'LLM.Logs.logger'. Please check path and ensure logger.py exists.")
-    print("Falling back to standard print statements.")
 
-
-    # Define dummy functions to avoid crashing the script
-    def log_info(msg, mod):
-        print(f"INFO [{mod}]: {msg}")
-
-
-    def log_error(msg, mod):
-        print(f"ERROR [{mod}]: {msg}")
-
-
-    def log_warning(msg, mod):
-        print(f"WARNING [{mod}]: {msg}")
-
-
-    def log_success(msg, mod):
-        print(f"SUCCESS [{mod}]: {msg}")
-
-
-    def log_header(msg, mod):
-        print(f"HEADER [{mod}]: {msg}")
-
-
-    def log(msg, mod, col):
-        print(f"LOG [{mod}]: {msg}")  # Dummy log function
+from LLM.Logs import logger
+# Import specific helper functions if they exist in logger module
+# Assuming standard names like log_info, log_error etc.
+from LLM.Logs.logger import log_info, log_error, log_warning, log_success, log_header, log
 
 # --- Import Benchmark Functions ---
 # Removed the try-except block as requested
@@ -57,8 +28,8 @@ if __name__ == "__main__":
     # --- Environment Config ---
     ENV_DIM = 30
     ENV_PARTICLES = 30
-    ENV_MAX_STEPS = 200  # Max PSO steps per env run
-    USE_VELOCITY_CLAMPING = False
+    ENV_MAX_STEPS = 5000  # Max PSO steps per env run
+    USE_VELOCITY_CLAMPING = True
 
     # --- Agent/Env Interaction Config ---
     AGENT_STEP_SIZE = 125  # Used for fixed Nt mode
@@ -66,9 +37,9 @@ if __name__ == "__main__":
     NT_RANGE = (1, 125)  # Range if ADAPTIVE_NT_MODE is True
 
     # --- Training Config ---
-    EPISODES_PER_FUNCTION = 10  # Renamed from NUM_EPISODES for clarity with train.py arg
+    EPISODES_PER_FUNCTION = 15  # Renamed from NUM_EPISODES for clarity with train.py arg
     BATCH_SIZE = 256
-    START_STEPS = 1000  # Total agent steps before learning starts
+    START_STEPS = 100  # Total agent steps before learning starts
     UPDATES_PER_STEP = 1  # Agent updates per agent step
     SAVE_FREQ_MULTIPLIER = 4  # Renamed from SAVE_FREQ for clarity with train.py arg
 

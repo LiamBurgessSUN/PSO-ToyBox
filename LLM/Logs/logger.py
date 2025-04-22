@@ -13,7 +13,7 @@ ENABLE_COLOR = True
 IS_TERMINAL = True
 # IS_TERMINAL = sys.stdout.isatty()
 
-DEBUG = True
+DEBUG = False
 
 # --- ANSI Escape Codes ---
 class Colors:

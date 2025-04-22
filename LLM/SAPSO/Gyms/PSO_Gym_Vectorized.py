@@ -10,6 +10,8 @@ import collections
 import traceback
 from pathlib import Path
 
+from ...PSO.Cognitive.GBest import GlobalBestStrategy
+
 # --- Import Logger ---
 try:
     from ...Logs import logger
@@ -82,7 +84,7 @@ class PSOEnvVectorized(gym.Env):
 
         # --- Initialize PSOVectorized ---
         try:
-            self.strategy = LocalBestStrategy(neighborhood_size=2)
+            self.strategy = GlobalBestStrategy(None)
             self.pso = PSOVectorized(
                 objective_function=self.obj_fn,
                 num_particles=self.num_particles,
@@ -94,6 +96,7 @@ class PSOEnvVectorized(gym.Env):
                 convergence_threshold_pbest_std=self.convergence_threshold_pbest_std,
                 # stability_threshold is now handled within metrics if needed, or implicitly via Poli's
             )
+            self.strategy.swarm = self.pso
             self.last_gbest = self.pso.gbest_value
             log_info(f"PSOVectorized instance created successfully. Initial gbest: {self.last_gbest:.4e}", module_name)
         except Exception as e:
