@@ -1,85 +1,65 @@
 # File: PSO-ToyBox/LLM/SAPSO/Gyms/PSO_Gym_Vectorized.py
-# Refactored to use the logger module
+# Refactored to align with updated PsoVectorized and SwarmMetricsVectorized,
+# ensuring metrics used for observation match paper definitions where possible.
 
 # --- Imports ---
-import gymnasium as gym  # Use gymnasium instead of gym
+import gymnasium as gym
 import numpy as np
 import math
 import collections
-import traceback  # For logging exceptions
-from pathlib import Path  # To get module name
+import traceback
+from pathlib import Path
 
 # --- Import Logger ---
-# Using the specified import path: from LLM.Logs import logger
-# Assuming Logs directory is two levels up from Gyms directory
 try:
-    from ...Logs import logger  # Adjust relative path if needed
+    from ...Logs import logger
     from ...Logs.logger import log_info, log_error, log_warning, log_success, log_header, log_debug
 except ImportError:
-    # Fallback print if logger fails to import
     print("ERROR: Logger module not found at 'LLM.Logs.logger'. Please check path.")
     print("Falling back to standard print statements.")
-
-
-    # Define dummy functions
-    def log_info(msg, mod):
-        print(f"INFO [{mod}]: {msg}")
-
-
-    def log_error(msg, mod):
-        print(f"ERROR [{mod}]: {msg}")
-
-
-    def log_warning(msg, mod):
-        print(f"WARNING [{mod}]: {msg}")
-
-
-    def log_success(msg, mod):
-        print(f"SUCCESS [{mod}]: {msg}")
-
-
-    def log_header(msg, mod):
-        print(f"HEADER [{mod}]: {msg}")
-
-
-    def log_debug(msg, mod):
-        print(f"DEBUG [{mod}]: {msg}")  # Optional debug
+    def log_info(msg, mod): print(f"INFO [{mod}]: {msg}")
+    def log_error(msg, mod): print(f"ERROR [{mod}]: {msg}")
+    def log_warning(msg, mod): print(f"WARNING [{mod}]: {msg}")
+    def log_success(msg, mod): print(f"SUCCESS [{mod}]: {msg}")
+    def log_header(msg, mod): print(f"HEADER [{mod}]: {msg}")
+    def log_debug(msg, mod): print(f"DEBUG [{mod}]: {msg}")
 
 # --- Project Imports ---
-# Do not change existing imports as requested
+# Use the updated PsoVectorized class ID if it changed
 from LLM.PSO.PsoVectorized import PSOVectorized
-from LLM.PSO.ObjectiveFunctions.Training.Rastrgin import RastriginFunction  # Example function
-from LLM.PSO.Cognitive.LBest import LocalBestStrategy  # Example strategy
+from LLM.PSO.ObjectiveFunctions.Training.Rastrgin import RastriginFunction
+from LLM.PSO.Cognitive.LBest import LocalBestStrategy
+# Metrics class is instantiated within PsoVectorized now, no direct import needed here usually
+# but keep for clarity if needed elsewhere.
+from LLM.PSO.Metrics.SwarmMetricsVectorized import SwarmMetricsVectorized
+
 
 # --- Module Name for Logging ---
-module_name = Path(__file__).stem  # Gets 'PSO_Gym_Vectorized'
-
+module_name = Path(__file__).stem # Gets 'PSO_Gym_Vectorized'
 
 class PSOEnvVectorized(gym.Env):
     """
     Gym environment for PSO using the vectorized PSO implementation (PSOVectorized).
-    Adapts PSO control parameters based on RL agent actions.
-    Includes logging.
+    Uses updated metrics aligned with the research paper.
     """
     metadata = {'render_modes': [], 'render_fps': 4}
 
     def __init__(self,
-                 obj_func=RastriginFunction(dim=30),  # Removed num_particles here
-                 num_particles=30,  # Added num_particles parameter
+                 obj_func=RastriginFunction(dim=30),
+                 num_particles=30,
                  max_steps=5000,
                  agent_step_size=10,
                  adaptive_nt=False,
                  nt_range=(1, 100),
-                 v_clamp_ratio=0.2,  # Added PSO param
-                 use_velocity_clamping=True,  # Added PSO param
+                 v_clamp_ratio=0.2,
+                 use_velocity_clamping=True,
                  convergence_patience=50,
                  convergence_threshold_gbest=1e-8,
                  convergence_threshold_pbest_std=1e-6,
-                 stability_threshold=1e-3  # Added metrics param
+                 # stability_threshold removed as Poli's condition is used inside metrics
                  ):
         """
         Initializes the Vectorized PSO Environment.
-        Logs initialization parameters.
         """
         super().__init__()
         log_info(f"Initializing PSOEnvVectorized: adaptive_nt={adaptive_nt}, max_steps={max_steps}", module_name)
@@ -98,32 +78,32 @@ class PSOEnvVectorized(gym.Env):
         self.convergence_patience = convergence_patience
         self.convergence_threshold_gbest = convergence_threshold_gbest
         self.convergence_threshold_pbest_std = convergence_threshold_pbest_std
-        self.stability_threshold = stability_threshold
+        # self.stability_threshold = stability_threshold # Removed
 
         # --- Initialize PSOVectorized ---
         try:
-            # Strategy object is passed but PSOVectorized currently assumes G-Best
-            self.strategy = LocalBestStrategy(neighborhood_size=2)  # Example strategy instance
+            self.strategy = LocalBestStrategy(neighborhood_size=2)
             self.pso = PSOVectorized(
                 objective_function=self.obj_fn,
                 num_particles=self.num_particles,
-                strategy=self.strategy,  # Pass strategy object
+                strategy=self.strategy,
                 v_clamp_ratio=self.v_clamp_ratio,
                 use_velocity_clamping=self.use_velocity_clamping,
                 convergence_patience=self.convergence_patience,
                 convergence_threshold_gbest=self.convergence_threshold_gbest,
                 convergence_threshold_pbest_std=self.convergence_threshold_pbest_std,
-                stability_threshold=self.stability_threshold
+                # stability_threshold is now handled within metrics if needed, or implicitly via Poli's
             )
-            self.last_gbest = self.pso.gbest_value  # Initialize last_gbest after PSO init
+            self.last_gbest = self.pso.gbest_value
             log_info(f"PSOVectorized instance created successfully. Initial gbest: {self.last_gbest:.4e}", module_name)
         except Exception as e:
             log_error(f"Failed to initialize PSOVectorized: {e}", module_name)
             log_error(traceback.format_exc(), module_name)
-            raise  # Re-raise exception as environment cannot function
+            raise
 
         # === Observation Space ===
-        # [squashed_norm_avg_vel, feasible_ratio, stability_ratio, percent_completion]
+        # [squashed_norm_avg_vel, feasible_ratio, stability_ratio (Poli), percent_completion]
+        # Note: stability_ratio now refers to Poli's condition metric
         obs_low = np.array([0.0, 0.0, 0.0, 0.0], dtype=np.float32)
         obs_high = np.array([1.0, 1.0, 1.0, 1.0], dtype=np.float32)
         self.observation_space = gym.spaces.Box(
@@ -131,38 +111,32 @@ class PSOEnvVectorized(gym.Env):
         )
         log_debug(f"Observation space defined: Box(low={obs_low}, high={obs_high})", module_name)
 
-        # === Action Space ===
-        self.action_bounds_low = np.array([0.3, 0.0, 0.0], dtype=np.float32)  # omega, c1, c2
+        # === Action Space === (No change needed here)
+        self.action_bounds_low = np.array([0.3, 0.0, 0.0], dtype=np.float32)
         self.action_bounds_high = np.array([1.0, 3.0, 3.0], dtype=np.float32)
         self.action_dim = 3
-
         if self.adaptive_nt:
-            self.action_bounds_low = np.append(self.action_bounds_low, -1.0).astype(
-                np.float32)  # nt action range [-1, 1]
+            self.action_bounds_low = np.append(self.action_bounds_low, -1.0).astype(np.float32)
             self.action_bounds_high = np.append(self.action_bounds_high, 1.0).astype(np.float32)
             self.action_dim = 4
-
         self.action_space = gym.spaces.Box(
             low=-1.0, high=1.0, shape=(self.action_dim,), dtype=np.float32
         )
         log_debug(f"Action space defined: Box(low=-1.0, high=1.0, shape=({self.action_dim},))", module_name)
 
+
     def _rescale_action(self, action: np.ndarray) -> tuple:
-        """ Rescales agent action [-1, 1] to actual parameter bounds. """
-        # Rescale omega, c1, c2
+        """ Rescales agent action [-1, 1] to actual parameter bounds. (No change needed)"""
         low_cp = self.action_bounds_low[:3]
         high_cp = self.action_bounds_high[:3]
-        # Clip action first to ensure it's within [-1, 1] before rescaling
         clipped_action_cp = np.clip(action[:3], -1.0, 1.0)
         rescaled_cp = low_cp + (clipped_action_cp + 1.0) * 0.5 * (high_cp - low_cp)
-        # Clip again to handle potential floating point inaccuracies
         rescaled_cp = np.clip(rescaled_cp, low_cp, high_cp)
         omega, c1, c2 = rescaled_cp
 
-        # Determine nt value
-        nt = self._current_nt  # Default for fixed mode
+        nt = self._current_nt
         if self.adaptive_nt:
-            action_nt = np.clip(action[3], -1.0, 1.0)  # Clip nt action
+            action_nt = np.clip(action[3], -1.0, 1.0)
             low_nt, high_nt = self.nt_range
             rescaled_nt = low_nt + (action_nt + 1.0) * 0.5 * (high_nt - low_nt)
             nt = int(np.round(np.clip(rescaled_nt, low_nt, high_nt)))
@@ -175,219 +149,205 @@ class PSOEnvVectorized(gym.Env):
         super().reset(seed=seed)
         log_info(f"Resetting environment (Seed: {seed}). Current step: {self.current_step}", module_name)
         self.current_step = 0
-        # Reset nt to default only if adaptive
         self._current_nt = self.nt_range[0] if self.adaptive_nt else self._current_nt
 
         # Re-initialize PSOVectorized state
         try:
-            self.pso = PSOVectorized(
+            self.pso = PSOVectorized( # Re-initialize PSO
                 objective_function=self.obj_fn,
                 num_particles=self.num_particles,
-                strategy=self.strategy,  # Pass strategy object
+                strategy=self.strategy,
                 v_clamp_ratio=self.v_clamp_ratio,
                 use_velocity_clamping=self.use_velocity_clamping,
                 convergence_patience=self.convergence_patience,
                 convergence_threshold_gbest=self.convergence_threshold_gbest,
                 convergence_threshold_pbest_std=self.convergence_threshold_pbest_std,
-                stability_threshold=self.stability_threshold
             )
-            self.last_gbest = self.pso.gbest_value  # Reset last_gbest
+            self.last_gbest = self.pso.gbest_value
             log_info(f"Environment reset complete. Initial gbest: {self.last_gbest:.4e}", module_name)
         except Exception as e:
             log_error(f"Failed to re-initialize PSOVectorized during reset: {e}", module_name)
             log_error(traceback.format_exc(), module_name)
-            # Return a default observation and info, or raise error
             default_obs = np.zeros(self.observation_space.shape, dtype=np.float32)
             return default_obs, {'error': 'PSO reset failed'}
 
-        # Get initial metrics from the PSO instance's calculator
+        # Get initial metrics for observation
+        # Cannot calculate step size or stability ratio at step 0
         initial_metrics = {}
-        if self.pso.metrics_calculator:
+        if self.pso.metrics_calculator and self.pso.num_particles > 0:
             try:
-                initial_metrics = self.pso.metrics_calculator.compute(
-                    self.pso.positions, self.pso.velocities, self.pso.bounds
-                )
+                # Calculate metrics that don't need previous step or CPs
+                vel_mag = np.mean(np.linalg.norm(self.pso.velocities, axis=1))
+                l, u = self.pso.bounds
+                is_out = np.any((self.pso.positions < l) | (self.pso.positions > u), axis=1)
+                infeasible = np.sum(is_out) / self.pso.num_particles
+
+                initial_metrics = {
+                    'avg_current_velocity_magnitude': vel_mag,
+                    'infeasible_ratio': infeasible,
+                    'stability_ratio': 0.0, # Cannot determine stability at step 0
+                    # Add others if needed by _get_obs and calculable
+                }
             except Exception as e:
-                log_warning(f"Failed to compute initial metrics during reset: {e}", module_name)
+                log_warning(f"Failed to compute subset of initial metrics during reset: {e}", module_name)
+                initial_metrics = {} # Ensure it's a dict
 
         observation = self._get_obs(initial_metrics)
-        info = {'initial_gbest': self.pso.gbest_value}  # Add initial gbest to info
+        info = {'initial_gbest': self.pso.gbest_value}
         return observation, info
 
     def step(self, action: np.ndarray):
         """ Executes one agent step (running `nt` internal PSO steps). """
         log_debug(f"Step {self.current_step}: Received action: {action}", module_name)
-        # 1. Rescale action
         omega, c1, c2, next_nt = self._rescale_action(action)
 
-        # 2. Update next nt if adaptive
         if self.adaptive_nt:
             self._current_nt = next_nt
             log_debug(f"Adaptive nt: Set next nt to {self._current_nt}", module_name)
 
-        # 3. Initialize variables for this agent turn
         cumulative_reward = 0.0
         terminated = False
         truncated = False
         steps_taken_this_turn = 0
-        step_metrics_list = []  # To store metrics from each internal PSO step
+        step_metrics_list = []
 
-        current_omega, current_c1, current_c2 = omega, c1, c2
-        log_debug(f"Running {self._current_nt} internal PSO steps with w={omega:.3f}, c1={c1:.3f}, c2={c2:.3f}",
-                  module_name)
+        current_omega, current_c1, current_c2 = omega, c1, c2 # Use fixed CPs for this agent turn
+        log_debug(f"Running {self._current_nt} internal PSO steps with w={omega:.3f}, c1={c1:.3f}, c2={c2:.3f}", module_name)
 
-        # 4. Run internal PSO loop for `self._current_nt` steps
+        final_metrics_for_obs = {} # Store metrics from the *last* internal step for observation
+
         for i in range(self._current_nt):
             if self.current_step >= self.max_steps:
                 truncated = True
                 log_info(f"Episode truncated at step {self.current_step} (max_steps reached).", module_name)
                 break
 
-            # --- Execute one PSO Step ---
             try:
+                # pso.optimize_step now returns metrics aligned with paper definitions
                 step_metrics, current_gbest, converged_this_step = self.pso.optimize_step(
                     current_omega, current_c1, current_c2
                 )
                 self.current_step += 1
                 steps_taken_this_turn += 1
+                final_metrics_for_obs = step_metrics # Update metrics for final observation
             except Exception as e:
                 log_error(f"Error during pso.optimize_step at step {self.current_step}: {e}", module_name)
                 log_error(traceback.format_exc(), module_name)
-                # Decide how to handle: terminate, truncate, or try to continue?
-                # Terminating seems safest if the core optimization fails.
-                terminated = True  # Mark as terminated due to internal error
-                step_metrics = {}  # No valid metrics
-                current_gbest = self.last_gbest  # Use last known gbest
+                terminated = True
+                step_metrics = {}
+                current_gbest = self.last_gbest
                 converged_this_step = False
+                final_metrics_for_obs = {} # Reset metrics on error
                 log_warning("Terminating episode due to error in optimize_step.", module_name)
-                break  # Exit inner loop
+                break
 
-            # --- Calculate Reward ---
             step_reward = self._calculate_relative_reward(current_gbest)
             self.last_gbest = current_gbest
             cumulative_reward += step_reward
 
-            # --- Store Detailed Metrics for Info Dict ---
-            # Add CPs used and step index to the metrics dict from PSO
-            detailed_metrics_for_info = step_metrics.copy()
-            detailed_metrics_for_info['omega'] = current_omega
-            detailed_metrics_for_info['c1'] = current_c1
-            detailed_metrics_for_info['c2'] = current_c2
-            detailed_metrics_for_info['pso_step'] = self.current_step - 1  # Step index (0-based)
-            step_metrics_list.append(detailed_metrics_for_info)
-            log_debug(
-                f"  PSO Step {self.current_step}: gbest={current_gbest:.4e}, reward={step_reward:.4f}, converged={converged_this_step}",
-                module_name)
+            # Add CPs used to the metrics dict for logging/analysis if needed
+            log_metrics = step_metrics.copy()
+            log_metrics['omega'] = current_omega
+            log_metrics['c1'] = current_c1
+            log_metrics['c2'] = current_c2
+            log_metrics['pso_step'] = self.current_step - 1
+            step_metrics_list.append(log_metrics)
+            log_debug(f"  PSO Step {self.current_step}: gbest={current_gbest:.4e}, reward={step_reward:.4f}, converged={converged_this_step}, stability={step_metrics.get('stability_ratio', 'N/A')}", module_name)
 
-            # --- Check Termination Conditions ---
+
             if converged_this_step:
                 terminated = True
                 log_info(f"PSO Swarm converged at step {self.current_step}.", module_name)
                 break
 
-            # Check max steps limit again (redundant check, but safe)
             if self.current_step >= self.max_steps:
                 truncated = True
-                if not terminated:  # Avoid double logging if already terminated
+                if not terminated:
                     log_info(f"Episode truncated at step {self.current_step} (max_steps reached).", module_name)
                 break
 
-        # 5. Prepare Observation for the *next* agent step
-        final_metrics_for_obs = {}
-        if self.pso.metrics_calculator:
-            try:
-                final_metrics_for_obs = self.pso.metrics_calculator.compute(
-                    self.pso.positions, self.pso.velocities, self.pso.bounds
-                )
-            except Exception as e:
-                log_warning(f"Failed to compute final metrics for observation: {e}", module_name)
-                # Observation will use defaults (zeros) in _get_obs
-
+        # 5. Prepare Observation using metrics from the *last successful* internal step
         observation = self._get_obs(final_metrics_for_obs)
 
         # 6. Prepare Info Dictionary
         info = {
             'steps_taken': steps_taken_this_turn,
             'nt': self._current_nt,
-            'step_metrics': step_metrics_list,  # List of metrics from each internal step
-            'final_gbest': self.pso.gbest_value  # Gbest at the end of the agent turn
+            'step_metrics': step_metrics_list,
+            'final_gbest': self.pso.gbest_value
         }
 
         terminated = bool(terminated)
         truncated = bool(truncated)
-        log_debug(
-            f"Agent turn end. Steps taken: {steps_taken_this_turn}. Terminated: {terminated}. Truncated: {truncated}. Reward: {cumulative_reward:.4f}",
-            module_name)
+        log_debug(f"Agent turn end. Steps taken: {steps_taken_this_turn}. Terminated: {terminated}. Truncated: {truncated}. Reward: {cumulative_reward:.4f}", module_name)
 
         return observation, cumulative_reward, terminated, truncated, info
 
+
     def _calculate_relative_reward(self, current_gbest: float) -> float:
-        """ Calculates reward based on relative improvement in gbest. """
+        """ Calculates reward based on relative improvement in gbest. (No change needed)"""
         y_old = self.last_gbest
         y_new = current_gbest
 
-        # Handle non-finite cases or no change
         if not np.isfinite(y_new) or np.isclose(y_new, y_old):
             log_debug(f"Reward calc: No change or non-finite new gbest ({y_new:.4e}). Reward=0.", module_name)
             return 0.0
-        if not np.isfinite(y_old) and np.isfinite(y_new):  # Found first finite solution
+        if not np.isfinite(y_old) and np.isfinite(y_new):
             log_debug(f"Reward calc: Found first finite gbest ({y_new:.4e}). Reward=1.0.", module_name)
             return 1.0
 
-        # Apply relative reward formula (Equation 25 from paper)
         reward = 0.0
-        beta = np.abs(y_old) + np.abs(y_new)
+        beta = np.abs(y_old) + np.abs(y_new) + 1e-9 # Add epsilon to avoid beta=0 if both y_old,y_new=0
 
-        if y_new >= 0 and y_old >= 0:  # Both non-negative
+        if y_new >= 0 and y_old >= 0:
             shifted_old = y_old + beta
             shifted_new = y_new + beta
             if not np.isclose(shifted_old, 0):
                 reward = 2.0 * (shifted_old - shifted_new) / shifted_old
             log_debug(f"Reward calc (Case +/+): y_old={y_old:.4e}, y_new={y_new:.4e}, reward={reward:.4f}", module_name)
-        elif y_new < 0 and y_old < 0:  # Both negative
+        elif y_new < 0 and y_old < 0:
             shift = 2 * beta
             shifted_old = y_old + shift
             shifted_new = y_new + shift
             if not np.isclose(shifted_old, 0):
                 reward = 2.0 * (shifted_old - shifted_new) / shifted_old
             log_debug(f"Reward calc (Case -/-): y_old={y_old:.4e}, y_new={y_new:.4e}, reward={reward:.4f}", module_name)
-        elif y_new < 0 and y_old >= 0:  # Improvement crossed zero
+        elif y_new < 0 and y_old >= 0:
             reward = 1.0
             log_debug(f"Reward calc (Case +/-): y_old={y_old:.4e}, y_new={y_new:.4e}, reward=1.0", module_name)
-        else:  # Case y_new >= 0 and y_old < 0 (Worsened across zero)
+        else:
             log_debug(f"Reward calc (Case -/+): y_old={y_old:.4e}, y_new={y_new:.4e}, reward=0.0", module_name)
             reward = 0.0
 
-        # Ensure reward is non-negative and capped
         final_reward = np.clip(reward, 0.0, 1.0)
         if not np.isclose(final_reward, reward):
-            log_warning(
-                f"Reward calculation resulted in value outside [0,1] ({reward:.4f}). Clipped to {final_reward:.4f}.",
-                module_name)
+             log_warning(f"Reward calculation ({reward:.4f}) clipped to {final_reward:.4f}.", module_name)
         return final_reward
 
+
     def _get_obs(self, metrics: dict) -> np.ndarray:
-        """ Calculates the observation vector from swarm metrics. """
-        # Use keys returned by SwarmMetricsVectorized
-        avg_vel = metrics.get('avg_velocity_magnitude', 0.0)
-        feasible_ratio = metrics.get('feasible_ratio', 1.0)  # Default to 1.0 if missing
-        # Use 'stability_ratio' key from SwarmMetricsVectorized
-        stable_ratio = metrics.get('stability_ratio', 1.0)  # Default to 1.0 if missing
+        """
+        Calculates the observation vector from swarm metrics, aligned with paper.
+        Uses: [squashed_norm_avg_vel, feasible_ratio, stability_ratio (Poli), percent_completion]
+        """
+        # Use the average *current* velocity magnitude for the velocity component (matches Eq. 22)
+        avg_vel = metrics.get('avg_current_velocity_magnitude', 0.0)
+        # Use infeasible ratio to get feasible ratio
+        infeasible_ratio = metrics.get('infeasible_ratio', 1.0) # Default to 1.0 (0% feasible) if missing
+        feasible_ratio = 1.0 - infeasible_ratio
+        # Use stability ratio based on Poli's condition
+        stable_ratio = metrics.get('stability_ratio', 0.0) # Default to 0.0 (unstable) if missing
 
         # Normalize average velocity using tanh squashing (Eq 22 adaptation)
         l, u = self.pso.bounds
         range_width = u - l
-        squashed_norm_avg_vel = 0.0  # Default
+        squashed_norm_avg_vel = 0.0
         if np.isclose(range_width, 0):
-            # Avoid division by zero, velocity is irrelevant if range is zero
-            squashed_norm_avg_vel = 0.5  # Represents zero velocity in [-1,1] -> [0,1] mapping
+            squashed_norm_avg_vel = 0.5 # Represents zero velocity in [-1,1] -> [0,1] mapping
         else:
-            # Normalize velocity magnitude relative to half the search space width
             scale = 0.5 * range_width
-            # tanh argument: how many "half-ranges" the velocity covers per step
             tanh_arg = avg_vel / scale if scale > 0 else avg_vel
             normalized_vel_component = math.tanh(tanh_arg)
-            # Squash tanh output [-1, 1] to observation range [0, 1]
             squashed_norm_avg_vel = (normalized_vel_component + 1.0) / 2.0
 
         # Calculate percentage completion
@@ -397,15 +357,12 @@ class PSOEnvVectorized(gym.Env):
         obs_vec = np.array([
             np.clip(squashed_norm_avg_vel, 0.0, 1.0),
             np.clip(feasible_ratio, 0.0, 1.0),
-            np.clip(stable_ratio, 0.0, 1.0),
+            np.clip(stable_ratio, 0.0, 1.0), # Use Poli's stability ratio
             np.clip(percent_completion, 0.0, 1.0)
         ], dtype=np.float32)
 
-        # Sanity check for NaN or Inf values
         if not np.all(np.isfinite(obs_vec)):
-            log_warning(
-                f"Non-finite values detected in observation at step {self.current_step}. Replacing/Clipping. Original: {obs_vec}",
-                module_name)
+            log_warning(f"Non-finite values in observation at step {self.current_step}. Original: {obs_vec}", module_name)
             obs_vec = np.nan_to_num(obs_vec, nan=0.0, posinf=1.0, neginf=0.0)
             obs_vec = np.clip(obs_vec, 0.0, 1.0)
             log_warning(f"Corrected observation: {obs_vec}", module_name)
@@ -416,8 +373,9 @@ class PSOEnvVectorized(gym.Env):
     # --- Standard Gym methods (optional) ---
     def render(self, mode='human'):
         log_warning("Render method not implemented for PSOEnvVectorized.", module_name)
-        pass  # Implement visualization if needed
+        pass
 
     def close(self):
         log_info("Closing PSOEnvVectorized.", module_name)
-        pass  # Clean up resources if needed
+        pass
+

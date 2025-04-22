@@ -183,7 +183,7 @@ def train_agent(
             convergence_patience=convergence_patience,
             convergence_threshold_gbest=convergence_threshold_gbest,
             convergence_threshold_pbest_std=convergence_threshold_pbest_std,
-            stability_threshold=stability_threshold
+            # stability_threshold=stability_threshold
         )
         state_dim = temp_env.observation_space.shape[0]
         action_dim = temp_env.action_space.shape[0]
@@ -289,7 +289,7 @@ def train_agent(
                     convergence_patience=convergence_patience,
                     convergence_threshold_gbest=convergence_threshold_gbest,
                     convergence_threshold_pbest_std=convergence_threshold_pbest_std,
-                    stability_threshold=stability_threshold
+                    # stability_threshold=stability_threshold
                 )
                 # Use total_episodes_run for seed consistency across restarts if needed
                 state, _ = train_env.reset(seed=total_episodes_run)

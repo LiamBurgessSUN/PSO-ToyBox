@@ -57,8 +57,8 @@ if __name__ == "__main__":
     # --- Environment Config ---
     ENV_DIM = 30
     ENV_PARTICLES = 30
-    ENV_MAX_STEPS = 5000  # Max PSO steps per env run
-    USE_VELOCITY_CLAMPING = True
+    ENV_MAX_STEPS = 200  # Max PSO steps per env run
+    USE_VELOCITY_CLAMPING = False
 
     # --- Agent/Env Interaction Config ---
     AGENT_STEP_SIZE = 125  # Used for fixed Nt mode
