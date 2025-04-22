@@ -10,7 +10,10 @@ import os
 # Set to False to disable color output (e.g., if logging to a file)
 ENABLE_COLOR = True
 # Check if running in a non-terminal environment (like some IDEs)
-IS_TERMINAL = sys.stdout.isatty()
+IS_TERMINAL = True
+# IS_TERMINAL = sys.stdout.isatty()
+
+DEBUG = False
 
 # --- ANSI Escape Codes ---
 class Colors:
@@ -118,7 +121,8 @@ def log_debug(message: str, module_name: str = "DEBUG"):
     """Logs a debug message."""
     # Example: Could add logic to only print debug if a flag is set
     # if os.environ.get("DEBUG_MODE") == "1":
-    log(message, module_name, "debug")
+    if DEBUG:
+        log(message, module_name, "debug")
 
 def log_header(message: str, module_name: str = "HEADER"):
     """Logs a header/section title message."""

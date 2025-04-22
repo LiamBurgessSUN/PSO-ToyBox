@@ -15,7 +15,7 @@ import os
 import time
 import random
 import sys
-import traceback # For logging exceptions
+import traceback  # For logging exceptions
 from pathlib import Path
 
 # --- Import Logger ---
@@ -28,13 +28,31 @@ except ImportError:
     # Fallback print if logger fails to import
     print("ERROR: Logger module not found at 'LLM.Logs.logger'. Please check path.")
     print("Falling back to standard print statements.")
+
+
     # Define dummy functions
-    def log_info(msg, mod): print(f"INFO [{mod}]: {msg}")
-    def log_error(msg, mod): print(f"ERROR [{mod}]: {msg}")
-    def log_warning(msg, mod): print(f"WARNING [{mod}]: {msg}")
-    def log_success(msg, mod): print(f"SUCCESS [{mod}]: {msg}")
-    def log_header(msg, mod): print(f"HEADER [{mod}]: {msg}")
-    def log_debug(msg, mod): print(f"DEBUG [{mod}]: {msg}") # Optional debug
+    def log_info(msg, mod):
+        print(f"INFO [{mod}]: {msg}")
+
+
+    def log_error(msg, mod):
+        print(f"ERROR [{mod}]: {msg}")
+
+
+    def log_warning(msg, mod):
+        print(f"WARNING [{mod}]: {msg}")
+
+
+    def log_success(msg, mod):
+        print(f"SUCCESS [{mod}]: {msg}")
+
+
+    def log_header(msg, mod):
+        print(f"HEADER [{mod}]: {msg}")
+
+
+    def log_debug(msg, mod):
+        print(f"DEBUG [{mod}]: {msg}")  # Optional debug
 
 # --- Project Imports (Absolute Paths) ---
 # Removed try-except block around these imports as requested
@@ -61,7 +79,7 @@ from LLM.PSO.ObjectiveFunctions.Training.Levy import Levy3Function
 from LLM.PSO.ObjectiveFunctions.Training.LevyMontalvo import LevyMontalvo2Function
 from LLM.PSO.ObjectiveFunctions.Training.Mishra import Mishra1Function, Mishra4Function
 from LLM.PSO.ObjectiveFunctions.Training.NeedleEye import NeedleEyeFunction
-from LLM.PSO.ObjectiveFunctions.Training.Norweigan import NorwegianFunction # Corrected class name if needed
+from LLM.PSO.ObjectiveFunctions.Training.Norweigan import NorwegianFunction  # Corrected class name if needed
 from LLM.PSO.ObjectiveFunctions.Training.Pathological import PathologicalFunction
 from LLM.PSO.ObjectiveFunctions.Training.Penalty import Penalty1Function, Penalty2Function
 from LLM.PSO.ObjectiveFunctions.Training.Periodic import PeriodicFunction
@@ -84,6 +102,7 @@ from LLM.PSO.ObjectiveFunctions.Training.Trigonometric import TrigonometricFunct
 from LLM.PSO.ObjectiveFunctions.Training.Vincent import VincentFunction
 from LLM.PSO.ObjectiveFunctions.Training.Weierstrass import WeierstrassFunction
 from LLM.PSO.ObjectiveFunctions.Training.XinSheYang import XinSheYang1Function, XinSheYang2Function
+
 # --- End Project Imports ---
 
 
@@ -103,55 +122,57 @@ objective_function_classes = [
     TrigonometricFunction, VincentFunction, WeierstrassFunction, XinSheYang1Function,
     XinSheYang2Function
 ]
+
+
 # --- End Manual List ---
 
 
 # --- Main Training Function (Accepts Arguments) ---
 def train_agent(
-    env_dim=30,
-    env_particles=30, # Keep this parameter
-    env_max_steps=5000,
-    agent_step_size=125,
-    adaptive_nt_mode=False,
-    nt_range=(1, 50),
-    episodes_per_function=5,
-    batch_size=256,
-    start_steps=1000,
-    updates_per_step=1,
-    save_freq_multiplier=4,
-    checkpoint_base_dir=None,
-    # Agent HPs
-    hidden_dim=256,
-    gamma=1.0,
-    tau=0.005,
-    alpha=0.2,
-    actor_lr=3e-4,
-    critic_lr=3e-4,
-    # Add PSO/Env params if needed by PSOEnvVectorized constructor
-    v_clamp_ratio=0.2,
-    use_velocity_clamping=True,
-    convergence_patience=50,
-    convergence_threshold_gbest=1e-8,
-    convergence_threshold_pbest_std=1e-6,
-    stability_threshold=1e-3
+        env_dim=30,
+        env_particles=30,  # Keep this parameter
+        env_max_steps=5000,
+        agent_step_size=125,
+        adaptive_nt_mode=False,
+        nt_range=(1, 50),
+        episodes_per_function=5,
+        batch_size=256,
+        start_steps=1000,
+        updates_per_step=1,
+        save_freq_multiplier=4,
+        checkpoint_base_dir=None,
+        # Agent HPs
+        hidden_dim=256,
+        gamma=1.0,
+        tau=0.005,
+        alpha=0.2,
+        actor_lr=3e-4,
+        critic_lr=3e-4,
+        # Add PSO/Env params if needed by PSOEnvVectorized constructor
+        v_clamp_ratio=0.2,
+        use_velocity_clamping=True,
+        convergence_patience=50,
+        convergence_threshold_gbest=1e-8,
+        convergence_threshold_pbest_std=1e-6,
+        stability_threshold=1e-3
 ):
     """Main function to train the SAC agent using PSOEnvVectorized."""
     # === Use Passed-in Hyperparameters ===
-    module_name = Path(__file__).stem # 'train'
+    module_name = Path(__file__).stem  # 'train'
 
     if not objective_function_classes:
         log_error("The objective_function_classes list is empty. Cannot train.", module_name)
-        return # Or raise an error
+        return  # Or raise an error
 
     # --- Initialize Environment (using a placeholder initially with PSOEnvVectorized) ---
     log_info("Creating temporary vectorized environment to get dimensions...", module_name)
     try:
         # Ensure num_particles is passed to the objective function constructor if needed
-        temp_obj_func = objective_function_classes[0](dim=env_dim) # num_particles not needed by func directly
+        temp_obj_func = objective_function_classes[0](dim=env_dim)  # num_particles not needed by func directly
         # --- Use PSOEnvVectorized ---
         temp_env = PSOEnvVectorized(
             obj_func=temp_obj_func,
-            num_particles=env_particles, # Pass num_particles here
+            num_particles=env_particles,  # Pass num_particles here
             max_steps=env_max_steps,
             agent_step_size=agent_step_size,
             adaptive_nt=adaptive_nt_mode,
@@ -171,7 +192,7 @@ def train_agent(
     except Exception as e:
         log_error(f"Error creating temporary environment: {e}", module_name)
         log_error(traceback.format_exc(), module_name)
-        return # Returning None or similar might be better than sys.exit
+        return  # Returning None or similar might be better than sys.exit
 
     # Setup device
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -190,7 +211,6 @@ def train_agent(
     log_info(f"Save Freq Multiplier (Functions): {save_freq_multiplier}", module_name)
     log_info(f"---------------------------------------------", module_name)
 
-
     # --- Initialize Agent ---
     agent = SACAgent(
         state_dim=state_dim, action_dim=action_dim, hidden_dim=hidden_dim,
@@ -205,7 +225,7 @@ def train_agent(
     )
 
     # --- Tracking Variables ---
-    results_log = {} # {func_name: [(ep1_reward, ep1_gbest), ...]}
+    results_log = {}  # {func_name: [(ep1_reward, ep1_gbest), ...]}
     global_step_count = 0
     total_agent_steps = 0
     total_episodes_run = 0
@@ -214,14 +234,14 @@ def train_agent(
     if checkpoint_base_dir is None:
         script_dir = Path(__file__).parent
         # Adjust path relative to benchmark.py if needed
-        project_root_fallback = script_dir.parents[1] # Assuming Benchmark is one level down
-        checkpoint_base_dir = project_root_fallback / "SAPSO" / "checkpoints" # Example adjusted path
+        project_root_fallback = script_dir.parents[1]  # Assuming Benchmark is one level down
+        checkpoint_base_dir = project_root_fallback / "SAPSO" / "checkpoints"  # Example adjusted path
         log_warning(f"checkpoint_base_dir not provided, using default: {checkpoint_base_dir}", module_name)
 
     # Adjusted checkpoint naming convention slightly
     mode_suffix = "adaptive_nt" if adaptive_nt_mode else f"fixed_nt{agent_step_size}"
     checkpoint_dir = Path(checkpoint_base_dir) / f"checkpoints_sapso_vectorized_{mode_suffix}"
-    checkpoint_prefix = f"sac_psoenv_vectorized_{mode_suffix}" # Prefix used for files
+    checkpoint_prefix = f"sac_psoenv_vectorized_{mode_suffix}"  # Prefix used for files
     checkpoint_file = checkpoint_dir / f"{checkpoint_prefix}_checkpoint.pth"
     final_model_file = checkpoint_dir / f"{checkpoint_prefix}_final.pth"
     os.makedirs(checkpoint_dir, exist_ok=True)
@@ -234,20 +254,23 @@ def train_agent(
     # Outer loop: Iterate through each objective function
     for func_index, selected_func_class in enumerate(objective_function_classes):
         func_name = selected_func_class.__name__
-        log_header(f"===== Training on Function {func_index + 1}/{len(objective_function_classes)}: {func_name} =====", module_name)
+        log_header(f"===== Training on Function {func_index + 1}/{len(objective_function_classes)}: {func_name} =====",
+                   module_name)
         results_log[func_name] = []
 
         # Inner loop: Run N episodes for the current function
         for episode_num in range(episodes_per_function):
             total_episodes_run += 1
-            log_info(f"--- Episode {episode_num + 1}/{episodes_per_function} (Total Ep: {total_episodes_run}) | Function: {func_name} ---", module_name)
+            log_info(
+                f"--- Episode {episode_num + 1}/{episodes_per_function} (Total Ep: {total_episodes_run}) | Function: {func_name} ---",
+                module_name)
 
             train_env = None
             try:
                 current_dim = env_dim
                 if func_name == "GiuntaFunction":
-                     current_dim = 2
-                     log_info(f"  Adjusting dimension to {current_dim} for {func_name}", module_name)
+                    current_dim = 2
+                    log_info(f"  Adjusting dimension to {current_dim} for {func_name}", module_name)
 
                 # Objective function doesn't need num_particles directly
                 obj_func_instance = selected_func_class(dim=current_dim)
@@ -255,7 +278,7 @@ def train_agent(
                 # --- Use PSOEnvVectorized ---
                 train_env = PSOEnvVectorized(
                     obj_func=obj_func_instance,
-                    num_particles=env_particles, # Pass num_particles
+                    num_particles=env_particles,  # Pass num_particles
                     max_steps=env_max_steps,
                     agent_step_size=agent_step_size,
                     adaptive_nt=adaptive_nt_mode,
@@ -272,10 +295,10 @@ def train_agent(
                 state, _ = train_env.reset(seed=total_episodes_run)
 
             except Exception as e:
-                log_error(f"Error creating environment for {func_name}, episode {episode_num+1}: {e}", module_name)
+                log_error(f"Error creating environment for {func_name}, episode {episode_num + 1}: {e}", module_name)
                 log_error(traceback.format_exc(), module_name)
                 log_warning("Skipping this episode.", module_name)
-                continue # Skip to the next episode
+                continue  # Skip to the next episode
 
             episode_reward = 0.0
             terminated, truncated = False, False
@@ -303,13 +326,15 @@ def train_agent(
                         episode_best_gbest = min(episode_best_gbest, turn_final_gbest)
 
                 except Exception as e:
-                     log_error(f"Error during env.step() in episode {episode_num+1}, agent step {episode_agent_steps+1}: {e}", module_name)
-                     log_error(traceback.format_exc(), module_name)
-                     log_warning("Terminating episode early.", module_name)
-                     truncated = True # Mark as truncated due to error
-                     next_state = state # Use previous state
-                     reward = 0 # Assign no reward for error step
-                     info = {} # Empty info
+                    log_error(
+                        f"Error during env.step() in episode {episode_num + 1}, agent step {episode_agent_steps + 1}: {e}",
+                        module_name)
+                    log_error(traceback.format_exc(), module_name)
+                    log_warning("Terminating episode early.", module_name)
+                    truncated = True  # Mark as truncated due to error
+                    next_state = state  # Use previous state
+                    reward = 0  # Assign no reward for error step
+                    info = {}  # Empty info
 
                 # Update counters
                 episode_agent_steps += 1
@@ -347,7 +372,7 @@ def train_agent(
             final_gbest_for_log = episode_best_gbest
             # Fallback: if tracking failed, get final value from pso object
             if not np.isfinite(final_gbest_for_log) and train_env and hasattr(train_env, 'pso'):
-                 final_gbest_for_log = train_env.pso.gbest_value
+                final_gbest_for_log = train_env.pso.gbest_value
 
             results_log[func_name].append((episode_reward, final_gbest_for_log))
 
@@ -361,33 +386,35 @@ def train_agent(
             try:
                 if train_env: train_env.close()
             except Exception as e:
-                log_warning(f"Error closing environment for episode {episode_num+1}: {e}", module_name)
+                log_warning(f"Error closing environment for episode {episode_num + 1}: {e}", module_name)
 
         # --- End of Episodes for Current Function ---
         log_header(f"===== Function {func_name} Training Complete =====", module_name)
         if results_log[func_name]:
-             # Filter out potential non-finite rewards if errors occurred
-             finite_rewards = [r for r, g in results_log[func_name] if np.isfinite(r)]
-             func_gbests = [g for r, g in results_log[func_name] if np.isfinite(g)]
-             if finite_rewards:
-                 log_info(f"  Avg Reward over {len(finite_rewards)} valid episodes: {np.mean(finite_rewards):.4f}", module_name)
-             else:
-                 log_warning(f"  No finite reward values recorded for this function.", module_name)
+            # Filter out potential non-finite rewards if errors occurred
+            finite_rewards = [r for r, g in results_log[func_name] if np.isfinite(r)]
+            func_gbests = [g for r, g in results_log[func_name] if np.isfinite(g)]
+            if finite_rewards:
+                log_info(f"  Avg Reward over {len(finite_rewards)} valid episodes: {np.mean(finite_rewards):.4f}",
+                         module_name)
+            else:
+                log_warning(f"  No finite reward values recorded for this function.", module_name)
 
-             if func_gbests:
-                  log_info(f"  Avg Final GBest over {len(func_gbests)} valid episodes: {np.mean(func_gbests):.6e}", module_name)
-             else:
-                  log_warning(f"  No finite Final GBest values recorded for this function.", module_name)
+            if func_gbests:
+                log_info(f"  Avg Final GBest over {len(func_gbests)} valid episodes: {np.mean(func_gbests):.6e}",
+                         module_name)
+            else:
+                log_warning(f"  No finite Final GBest values recorded for this function.", module_name)
         else:
-             log_warning(f"  No results logged for this function.", module_name)
-
+            log_warning(f"  No results logged for this function.", module_name)
 
         # --- Periodic Checkpoint Saving (Based on Functions Completed) ---
         # Save checkpoint every 'save_freq_multiplier' *functions*
         if (func_index + 1) % save_freq_multiplier == 0:
             try:
                 agent.save(str(checkpoint_file))
-                log_success(f"Checkpoint saved after function {func_index + 1} ({func_name}) to {checkpoint_file}", module_name)
+                log_success(f"Checkpoint saved after function {func_index + 1} ({func_name}) to {checkpoint_file}",
+                            module_name)
             except Exception as e:
                 log_warning(f"Could not save checkpoint during training: {e}", module_name)
 
@@ -400,15 +427,17 @@ def train_agent(
     all_final_rewards = []
     all_final_gbests = []
     for func_name, results in results_log.items():
-        all_final_rewards.extend([r for r, g in results if np.isfinite(r)]) # Only use finite rewards
-        all_final_gbests.extend([g for r, g in results if np.isfinite(g)]) # Only use finite gbests
+        all_final_rewards.extend([r for r, g in results if np.isfinite(r)])  # Only use finite rewards
+        all_final_gbests.extend([g for r, g in results if np.isfinite(g)])  # Only use finite gbests
 
     log_header("--- Overall Training Results ---", module_name)
     if all_final_rewards:
         mean_reward = np.mean(all_final_rewards)
         std_reward = np.std(all_final_rewards)
         var_reward = np.var(all_final_rewards)
-        log_info(f"Overall Mean Training Reward ({len(all_final_rewards)} valid Eps): {mean_reward:.4f} (μ) +/- {std_reward:.4f} (σ)", module_name)
+        log_info(
+            f"Overall Mean Training Reward ({len(all_final_rewards)} valid Eps): {mean_reward:.4f} (μ) +/- {std_reward:.4f} (σ)",
+            module_name)
         log_info(f"Overall Training Reward Variance: {var_reward:.6f}", module_name)
     else:
         log_warning("No valid training reward data collected.", module_name)
@@ -425,16 +454,18 @@ def train_agent(
 
         log_info(f"Observed GBest Range: [{min_gbest:.6e}, {max_gbest:.6e}]", module_name)
 
-        if gbest_range > 1e-12: # Check if range is significantly greater than zero
+        if gbest_range > 1e-12:  # Check if range is significantly greater than zero
             # Normalize gbests to [0, 1] based on observed range
             normalized_gbests = (gbest_array - min_gbest) / gbest_range
 
             # Calculate mean and std dev of normalized values
             mean_normalized_gbest = np.mean(normalized_gbests)
             std_normalized_gbest = np.std(normalized_gbests)
-            var_normalized_gbest = np.var(normalized_gbests) # Variance of normalized
+            var_normalized_gbest = np.var(normalized_gbests)  # Variance of normalized
 
-            log_info(f"Overall Mean NORMALIZED Final GBest ({len(all_final_gbests)} valid Eps): {mean_normalized_gbest:.6f} (μ) +/- {std_normalized_gbest:.6f} (σ)", module_name)
+            log_info(
+                f"Overall Mean NORMALIZED Final GBest ({len(all_final_gbests)} valid Eps): {mean_normalized_gbest:.6f} (μ) +/- {std_normalized_gbest:.6f} (σ)",
+                module_name)
             log_info(f"Overall NORMALIZED Final GBest Variance: {var_normalized_gbest:.6f}", module_name)
 
             # Optionally, print raw mean/std as well for comparison
@@ -444,13 +475,13 @@ def train_agent(
 
         else:
             # Handle case where all gbest values are identical (or very close)
-            log_warning(f"All valid final GBest values are nearly identical ({min_gbest:.6e}). Normalization skipped.", module_name)
+            log_warning(f"All valid final GBest values are nearly identical ({min_gbest:.6e}). Normalization skipped.",
+                        module_name)
             log_info(f"Raw Mean Final GBest: {min_gbest:.6e} +/- 0.0", module_name)
 
     else:
         log_warning("No final global best data collected for normalization.", module_name)
     log_info("---------------------------------", module_name)
-
 
     # --- Save Final Model ---
     try:
@@ -490,13 +521,11 @@ def train_agent(
             except Exception as e:
                 log_warning(f"Could not save training reward plot: {e}", module_name)
             # plt.show() # Optionally show plot immediately
-            plt.close() # Close the figure to free memory
+            plt.close()  # Close the figure to free memory
         else:
             log_warning("No valid average rewards per function to plot.", module_name)
     else:
-         log_warning("No results logged for plotting average rewards per function.", module_name)
-
+        log_warning("No results logged for plotting average rewards per function.", module_name)
 
 # --- Main execution block removed ---
 # This script is intended to be called by benchmark.py
-

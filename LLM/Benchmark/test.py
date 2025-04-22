@@ -14,7 +14,7 @@ import time
 import random
 import sys
 import collections
-import traceback # For logging exceptions
+import traceback  # For logging exceptions
 from pathlib import Path
 
 # --- Import Logger ---
@@ -27,19 +27,37 @@ except ImportError:
     # Fallback print if logger fails to import
     print("ERROR: Logger module not found at 'LLM.Logs.logger'. Please check path.")
     print("Falling back to standard print statements.")
+
+
     # Define dummy functions
-    def log_info(msg, mod): print(f"INFO [{mod}]: {msg}")
-    def log_error(msg, mod): print(f"ERROR [{mod}]: {msg}")
-    def log_warning(msg, mod): print(f"WARNING [{mod}]: {msg}")
-    def log_success(msg, mod): print(f"SUCCESS [{mod}]: {msg}")
-    def log_header(msg, mod): print(f"HEADER [{mod}]: {msg}")
-    def log_debug(msg, mod): print(f"DEBUG [{mod}]: {msg}") # Optional debug
+    def log_info(msg, mod):
+        print(f"INFO [{mod}]: {msg}")
+
+
+    def log_error(msg, mod):
+        print(f"ERROR [{mod}]: {msg}")
+
+
+    def log_warning(msg, mod):
+        print(f"WARNING [{mod}]: {msg}")
+
+
+    def log_success(msg, mod):
+        print(f"SUCCESS [{mod}]: {msg}")
+
+
+    def log_header(msg, mod):
+        print(f"HEADER [{mod}]: {msg}")
+
+
+    def log_debug(msg, mod):
+        print(f"DEBUG [{mod}]: {msg}")  # Optional debug
 
 # --- Project Imports ---
 # Removed try-except block around these imports as requested
 from LLM.RL.ActorCritic.Agent import SACAgent
-from LLM.SAPSO.Gyms.PSO_Gym_Vectorized import PSOEnvVectorized # Use Vectorized Env
-from LLM.PSO.ObjectiveFunctions.ObjectiveFunction import ObjectiveFunction # Base class needed
+from LLM.SAPSO.Gyms.PSO_Gym_Vectorized import PSOEnvVectorized  # Use Vectorized Env
+from LLM.PSO.ObjectiveFunctions.ObjectiveFunction import ObjectiveFunction  # Base class needed
 # Import plotting functions (assuming path is correct)
 from LLM.SAPSO.graphics.graphing import (
     plot_evaluation_parameters,
@@ -58,6 +76,7 @@ from LLM.PSO.ObjectiveFunctions.Testing.Schaffer import Schaffer4Function
 from LLM.PSO.ObjectiveFunctions.Testing.SineEnvelope import SineEnvelopeFunction
 from LLM.PSO.ObjectiveFunctions.Testing.StretchedVSineWave import StretchedVSineWaveFunction
 from LLM.PSO.ObjectiveFunctions.Testing.Wavy import WavyFunction
+
 # --- End Project Imports ---
 
 
@@ -67,37 +86,39 @@ test_objective_function_classes = [
     CrossLegTableFunction, Lanczos3Function, MichalewiczFunction, Schaffer4Function,
     SineEnvelopeFunction, StretchedVSineWaveFunction, WavyFunction
 ]
+
+
 # --- End Manual List ---
 
 
 # --- Main Testing Function (Accepts Arguments) ---
 def test_agent(
-    env_dim=30,
-    env_particles=30, # Keep this parameter
-    env_max_steps=5000,
-    agent_step_size=125,      # Must match trained model config
-    adaptive_nt_mode=False,   # Must match trained model config
-    nt_range=(1, 50),         # Must match trained model config
-    num_eval_runs=30,
-    checkpoint_base_dir=None, # Expect this from benchmark.py
-    # Agent HPs (only needed for init before load)
-    hidden_dim=256,
-    gamma=1.0,
-    tau=0.005,
-    alpha=0.2,
-    actor_lr=3e-4,
-    critic_lr=3e-4,
-    # Add PSO/Env params if needed by PSOEnvVectorized constructor
-    v_clamp_ratio=0.2,
-    use_velocity_clamping=True,
-    convergence_patience=50, # These might not be used by test env, but good practice
-    convergence_threshold_gbest=1e-8,
-    convergence_threshold_pbest_std=1e-6,
-    stability_threshold=1e-3
+        env_dim=30,
+        env_particles=30,  # Keep this parameter
+        env_max_steps=5000,
+        agent_step_size=125,  # Must match trained model config
+        adaptive_nt_mode=False,  # Must match trained model config
+        nt_range=(1, 50),  # Must match trained model config
+        num_eval_runs=30,
+        checkpoint_base_dir=None,  # Expect this from benchmark.py
+        # Agent HPs (only needed for init before load)
+        hidden_dim=256,
+        gamma=1.0,
+        tau=0.005,
+        alpha=0.2,
+        actor_lr=3e-4,
+        critic_lr=3e-4,
+        # Add PSO/Env params if needed by PSOEnvVectorized constructor
+        v_clamp_ratio=0.2,
+        use_velocity_clamping=True,
+        convergence_patience=50,  # These might not be used by test env, but good practice
+        convergence_threshold_gbest=1e-8,
+        convergence_threshold_pbest_std=1e-6,
+        stability_threshold=1e-3
 ):
     """Main function to load and evaluate the trained SAC agent using PSOEnvVectorized."""
     # === Use Passed-in Hyperparameters ===
-    module_name = Path(__file__).stem # 'test'
+    module_name = Path(__file__).stem  # 'test'
 
     if not test_objective_function_classes:
         log_error("The test_objective_function_classes list is empty. Cannot test.", module_name)
@@ -106,8 +127,8 @@ def test_agent(
     # --- Determine Model File Path ---
     if checkpoint_base_dir is None:
         script_dir = Path(__file__).parent
-        project_root_fallback = script_dir.parents[1] # Adjust path if needed
-        checkpoint_base_dir = project_root_fallback / "SAPSO" / "checkpoints" # Example adjusted path
+        project_root_fallback = script_dir.parents[1]  # Adjust path if needed
+        checkpoint_base_dir = project_root_fallback / "SAPSO" / "checkpoints"  # Example adjusted path
         log_warning(f"checkpoint_base_dir not provided, using default: {checkpoint_base_dir}", module_name)
 
     # Construct path based on training mode (must match train.py)
@@ -115,12 +136,14 @@ def test_agent(
     # Assuming model was saved in the vectorized checkpoints dir
     checkpoint_dir = Path(checkpoint_base_dir) / f"checkpoints_sapso_vectorized_{mode_suffix}"
     checkpoint_prefix = f"sac_psoenv_vectorized_{mode_suffix}"
-    MODEL_TO_LOAD = checkpoint_dir / f"{checkpoint_prefix}_final.pth" # Load the final model
+    MODEL_TO_LOAD = checkpoint_dir / f"{checkpoint_prefix}_final.pth"  # Load the final model
 
     log_info(f"Attempting to load model: {MODEL_TO_LOAD}", module_name)
     if not MODEL_TO_LOAD.exists():
         log_error(f"Model file not found at {MODEL_TO_LOAD}", module_name)
-        log_error("Ensure that training was run with the same configuration (adaptive_nt/fixed_nt) and that the checkpoint base directory is correct.", module_name)
+        log_error(
+            "Ensure that training was run with the same configuration (adaptive_nt/fixed_nt) and that the checkpoint base directory is correct.",
+            module_name)
         return
 
     # --- Initialize Environment (Placeholder using PSOEnvVectorized) ---
@@ -130,7 +153,7 @@ def test_agent(
         # --- Use PSOEnvVectorized ---
         temp_env = PSOEnvVectorized(
             obj_func=temp_obj_func,
-            num_particles=env_particles, # Pass num_particles
+            num_particles=env_particles,  # Pass num_particles
             max_steps=env_max_steps,
             agent_step_size=agent_step_size,
             adaptive_nt=adaptive_nt_mode,
@@ -170,7 +193,7 @@ def test_agent(
     agent = SACAgent(
         state_dim=state_dim, action_dim=action_dim, hidden_dim=hidden_dim,
         gamma=gamma, tau=tau, alpha=alpha, actor_lr=actor_lr, critic_lr=critic_lr,
-        device=device, adaptive_nt=adaptive_nt_mode # Use argument
+        device=device, adaptive_nt=adaptive_nt_mode  # Use argument
     )
 
     # --- Load the Trained Agent Model ---
@@ -190,15 +213,16 @@ def test_agent(
     # data_point = [w, c1, c2, stable%, infeasible%, avg_vel_mag, diversity, gbest]
     evaluation_data = collections.defaultdict(list)
     all_eval_rewards = []
-    final_gbests_all_runs = [] # Store final gbest from each run
+    final_gbests_all_runs = []  # Store final gbest from each run
     eval_start_time = time.time()
 
     # --- Evaluation Loop ---
     for func_index, func_class in enumerate(test_objective_function_classes):
         func_name = func_class.__name__
-        log_info(f"--- Evaluating Function {func_index+1}/{len(test_objective_function_classes)}: {func_name} ---", module_name)
+        log_info(f"--- Evaluating Function {func_index + 1}/{len(test_objective_function_classes)}: {func_name} ---",
+                 module_name)
         func_rewards = []
-        last_gbest_this_func = [] # Store final gbest for runs on this function
+        last_gbest_this_func = []  # Store final gbest for runs on this function
 
         for run in range(num_eval_runs):
             log_debug(f"  Starting Evaluation Run {run + 1}/{num_eval_runs} for {func_name}...", module_name)
@@ -214,7 +238,7 @@ def test_agent(
                 # --- Use PSOEnvVectorized ---
                 eval_env = PSOEnvVectorized(
                     obj_func=obj_func_instance,
-                    num_particles=env_particles, # Pass num_particles
+                    num_particles=env_particles,  # Pass num_particles
                     max_steps=env_max_steps,
                     agent_step_size=agent_step_size,
                     adaptive_nt=adaptive_nt_mode,
@@ -229,12 +253,12 @@ def test_agent(
                 )
                 # Use different seeds for evaluation runs
                 state, _ = eval_env.reset(seed=1000 + func_index * num_eval_runs + run)
-                run_best_gbest = eval_env.pso.gbest_value # Initialize with starting gbest
+                run_best_gbest = eval_env.pso.gbest_value  # Initialize with starting gbest
 
             except Exception as e:
-                log_error(f"  Error creating environment for run {run+1} on {func_name}: {e}", module_name)
+                log_error(f"  Error creating environment for run {run + 1} on {func_name}: {e}", module_name)
                 log_error(traceback.format_exc(), module_name)
-                continue # Skip this run
+                continue  # Skip this run
 
             run_reward = 0.0
             term, trunc = False, False
@@ -259,13 +283,13 @@ def test_agent(
                         run_best_gbest = min(run_best_gbest, turn_final_gbest)
 
                 except Exception as e:
-                     log_error(f"  Error during env.step() in run {run+1} on {func_name}: {e}", module_name)
-                     log_error(traceback.format_exc(), module_name)
-                     log_warning("  Terminating run early.", module_name)
-                     trunc = True
-                     next_state = state
-                     reward = 0
-                     info = {}
+                    log_error(f"  Error during env.step() in run {run + 1} on {func_name}: {e}", module_name)
+                    log_error(traceback.format_exc(), module_name)
+                    log_warning("  Terminating run early.", module_name)
+                    trunc = True
+                    next_state = state
+                    reward = 0
+                    info = {}
 
                 # --- Collect detailed metrics per PSO step for plotting ---
                 step_metrics_list = info.get('step_metrics', [])
@@ -296,32 +320,37 @@ def test_agent(
             final_gbest_for_log = run_best_gbest
             # Fallback if tracking failed
             if not np.isfinite(final_gbest_for_log) and eval_env and hasattr(eval_env, 'pso'):
-                 final_gbest_for_log = eval_env.pso.gbest_value
+                final_gbest_for_log = eval_env.pso.gbest_value
 
-            if np.isfinite(final_gbest_for_log): # Only store valid final gbests
-                 last_gbest_this_func.append(final_gbest_for_log)
+            if np.isfinite(final_gbest_for_log):  # Only store valid final gbests
+                last_gbest_this_func.append(final_gbest_for_log)
 
-            log_debug(f"  Finished Run {run + 1}/{num_eval_runs}. Reward: {run_reward:.4f}, Final GBest: {final_gbest_for_log:.6e}", module_name)
+            log_debug(
+                f"  Finished Run {run + 1}/{num_eval_runs}. Reward: {run_reward:.4f}, Final GBest: {final_gbest_for_log:.6e}",
+                module_name)
             try:
                 eval_env.close()
             except Exception as e:
-                 log_warning(f"  Error closing environment for run {run+1}: {e}", module_name)
+                log_warning(f"  Error closing environment for run {run + 1}: {e}", module_name)
 
         # Aggregate rewards and final gbests for this function
         if func_rewards:
             # Filter out potential non-finite rewards
             finite_rewards = [r for r in func_rewards if np.isfinite(r)]
             if finite_rewards:
-                 all_eval_rewards.extend(finite_rewards)
-                 log_info(f"--- Function {func_name} Avg Reward ({len(finite_rewards)} valid runs): {np.mean(finite_rewards):.4f} +/- {np.std(finite_rewards):.4f} ---", module_name)
+                all_eval_rewards.extend(finite_rewards)
+                log_info(
+                    f"--- Function {func_name} Avg Reward ({len(finite_rewards)} valid runs): {np.mean(finite_rewards):.4f} +/- {np.std(finite_rewards):.4f} ---",
+                    module_name)
             else:
-                 log_warning(f"--- Function {func_name}: No valid rewards recorded ---", module_name)
-        if last_gbest_this_func: # Already filtered for finite values
-             final_gbests_all_runs.extend(last_gbest_this_func)
-             log_info(f"--- Function {func_name} Avg Final GBest ({len(last_gbest_this_func)} valid runs): {np.mean(last_gbest_this_func):.6e} +/- {np.std(last_gbest_this_func):.6e} ---", module_name)
+                log_warning(f"--- Function {func_name}: No valid rewards recorded ---", module_name)
+        if last_gbest_this_func:  # Already filtered for finite values
+            final_gbests_all_runs.extend(last_gbest_this_func)
+            log_info(
+                f"--- Function {func_name} Avg Final GBest ({len(last_gbest_this_func)} valid runs): {np.mean(last_gbest_this_func):.6e} +/- {np.std(last_gbest_this_func):.6e} ---",
+                module_name)
         else:
-             log_warning(f"--- Function {func_name}: No valid final GBest values recorded ---", module_name)
-
+            log_warning(f"--- Function {func_name}: No valid final GBest values recorded ---", module_name)
 
     # --- End of all evaluation runs ---
     eval_end_time = time.time()
@@ -330,15 +359,17 @@ def test_agent(
 
     # --- Calculate and Print Overall Final Statistics ---
     log_header("--- Overall Evaluation Results ---", module_name)
-    if all_eval_rewards: # Already filtered for finite
+    if all_eval_rewards:  # Already filtered for finite
         mean_reward = np.mean(all_eval_rewards)
         std_reward = np.std(all_eval_rewards)
-        log_info(f"Overall Mean Reward ({len(all_eval_rewards)} valid Runs): {mean_reward:.4f} (μ) +/- {std_reward:.4f} (σ)", module_name)
+        log_info(
+            f"Overall Mean Reward ({len(all_eval_rewards)} valid Runs): {mean_reward:.4f} (μ) +/- {std_reward:.4f} (σ)",
+            module_name)
     else:
         log_warning("No valid evaluation reward data collected.", module_name)
 
     # --- Calculate NORMALIZED GBest Statistics ---
-    if final_gbests_all_runs: # Already filtered for finite
+    if final_gbests_all_runs:  # Already filtered for finite
         gbest_array = np.array(final_gbests_all_runs)
         min_gbest = np.min(gbest_array)
         max_gbest = np.max(gbest_array)
@@ -352,18 +383,20 @@ def test_agent(
             std_normalized_gbest = np.std(normalized_gbests)
             var_normalized_gbest = np.var(normalized_gbests)
 
-            log_info(f"Overall Mean NORMALIZED Final GBest ({len(final_gbests_all_runs)} valid Runs): {mean_normalized_gbest:.6f} (μ) +/- {std_normalized_gbest:.6f} (σ)", module_name)
+            log_info(
+                f"Overall Mean NORMALIZED Final GBest ({len(final_gbests_all_runs)} valid Runs): {mean_normalized_gbest:.6f} (μ) +/- {std_normalized_gbest:.6f} (σ)",
+                module_name)
             log_info(f"Overall NORMALIZED Final GBest Variance: {var_normalized_gbest:.6f}", module_name)
             mean_raw_gbest = np.mean(gbest_array)
             std_raw_gbest = np.std(gbest_array)
             log_info(f"(Raw Mean Final GBest: {mean_raw_gbest:.6e} +/- {std_raw_gbest:.6e})", module_name)
         else:
-            log_warning(f"All valid final GBest values are nearly identical ({min_gbest:.6e}). Normalization skipped.", module_name)
+            log_warning(f"All valid final GBest values are nearly identical ({min_gbest:.6e}). Normalization skipped.",
+                        module_name)
             log_info(f"Raw Mean Final GBest: {min_gbest:.6e} +/- 0.0", module_name)
     else:
         log_warning("No final global best data collected for normalization.", module_name)
     log_info("---------------------------------", module_name)
-
 
     # --- Generate ALL Evaluation Plots ---
     if evaluation_data:
@@ -386,13 +419,11 @@ def test_agent(
             plot_gbest_convergence(evaluation_data, env_max_steps, str(plot_output_dir), plot_prefix)
             log_success(f"Evaluation plots saved in: {plot_output_dir}", module_name)
         except Exception as e:
-             log_error(f"Error generating plots: {e}", module_name)
-             log_error(traceback.format_exc(), module_name)
-             log_warning("Plot generation failed. Ensure graphing.py is compatible with the data format.", module_name)
+            log_error(f"Error generating plots: {e}", module_name)
+            log_error(traceback.format_exc(), module_name)
+            log_warning("Plot generation failed. Ensure graphing.py is compatible with the data format.", module_name)
     else:
         log_warning("No evaluation data was collected, skipping plot generation.", module_name)
 
-
 # --- Main execution block removed ---
 # This script is intended to be called by benchmark.py
-

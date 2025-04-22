@@ -3,9 +3,9 @@
 # Uses the custom logger from LLM.Logs.
 
 import time
-import sys # Import sys for exit
+import sys  # Import sys for exit
 from pathlib import Path
-import traceback # Import traceback for logging errors
+import traceback  # Import traceback for logging errors
 
 # --- Import Logger ---
 # Using the specified import path
@@ -18,45 +18,62 @@ except ImportError:
     # Fallback print if logger fails to import - crucial for basic feedback
     print("ERROR: Logger module not found at 'LLM.Logs.logger'. Please check path and ensure logger.py exists.")
     print("Falling back to standard print statements.")
-    # Define dummy functions to avoid crashing the script
-    def log_info(msg, mod): print(f"INFO [{mod}]: {msg}")
-    def log_error(msg, mod): print(f"ERROR [{mod}]: {msg}")
-    def log_warning(msg, mod): print(f"WARNING [{mod}]: {msg}")
-    def log_success(msg, mod): print(f"SUCCESS [{mod}]: {msg}")
-    def log_header(msg, mod): print(f"HEADER [{mod}]: {msg}")
-    def log(msg, mod, col): print(f"LOG [{mod}]: {msg}") # Dummy log function
 
+
+    # Define dummy functions to avoid crashing the script
+    def log_info(msg, mod):
+        print(f"INFO [{mod}]: {msg}")
+
+
+    def log_error(msg, mod):
+        print(f"ERROR [{mod}]: {msg}")
+
+
+    def log_warning(msg, mod):
+        print(f"WARNING [{mod}]: {msg}")
+
+
+    def log_success(msg, mod):
+        print(f"SUCCESS [{mod}]: {msg}")
+
+
+    def log_header(msg, mod):
+        print(f"HEADER [{mod}]: {msg}")
+
+
+    def log(msg, mod, col):
+        print(f"LOG [{mod}]: {msg}")  # Dummy log function
 
 # --- Import Benchmark Functions ---
 # Removed the try-except block as requested
 from LLM.Benchmark.test import test_agent
 from LLM.Benchmark.train import train_agent
 
-
 if __name__ == "__main__":
     # Get the module name for logging (using the filename without extension)
-    module_name = Path(__file__).stem # Gets 'benchmark'
+    module_name = Path(__file__).stem  # Gets 'benchmark'
 
     # === Central Hyperparameter Definition ===
     # --- Environment Config ---
     ENV_DIM = 30
     ENV_PARTICLES = 30
-    ENV_MAX_STEPS = 5000 # Max PSO steps per env run
+    ENV_MAX_STEPS = 5000  # Max PSO steps per env run
+    USE_VELOCITY_CLAMPING = True
 
     # --- Agent/Env Interaction Config ---
-    AGENT_STEP_SIZE = 125 # Used for fixed Nt mode
-    ADAPTIVE_NT_MODE = True # Set to True to enable adaptive Nt
-    NT_RANGE = (1, 50)    # Range if ADAPTIVE_NT_MODE is True
+    AGENT_STEP_SIZE = 125  # Used for fixed Nt mode
+    ADAPTIVE_NT_MODE = False  # Set to True to enable adaptive Nt
+    NT_RANGE = (1, 125)  # Range if ADAPTIVE_NT_MODE is True
 
     # --- Training Config ---
-    EPISODES_PER_FUNCTION = 5 # Renamed from NUM_EPISODES for clarity with train.py arg
+    EPISODES_PER_FUNCTION = 10  # Renamed from NUM_EPISODES for clarity with train.py arg
     BATCH_SIZE = 256
-    START_STEPS = 1000    # Total agent steps before learning starts
+    START_STEPS = 1000  # Total agent steps before learning starts
     UPDATES_PER_STEP = 1  # Agent updates per agent step
-    SAVE_FREQ_MULTIPLIER = 4 # Renamed from SAVE_FREQ for clarity with train.py arg
+    SAVE_FREQ_MULTIPLIER = 4  # Renamed from SAVE_FREQ for clarity with train.py arg
 
     # --- Testing Config ---
-    NUM_EVAL_RUNS = 30    # Number of deterministic runs per test function
+    NUM_EVAL_RUNS = 30  # Number of deterministic runs per test function
 
     # --- Agent Hyperparameters (can also be passed if needed) ---
     # hidden_dim=256; gamma=1.0; tau=0.005; alpha=0.2; actor_lr=3e-4; critic_lr=3e-4
@@ -65,7 +82,7 @@ if __name__ == "__main__":
     # --- Checkpoint/Output Config ---
     # Construct paths relative to the project root found earlier
     # (Checkpoint filenames are constructed inside train/test based on config)
-    CHECKPOINT_BASE_DIR = "models" # Relative path for models/checkpoints
+    CHECKPOINT_BASE_DIR = "models"  # Relative path for models/checkpoints
 
     # ========================================
     log_header("Starting SAPSO Benchmark Process", module_name)
@@ -83,7 +100,6 @@ if __name__ == "__main__":
     log_info(f"  Evaluation Runs per Test Func: {NUM_EVAL_RUNS}", module_name)
     log_info(f"  Checkpoint Base Dir: {CHECKPOINT_BASE_DIR}", module_name)
     log_info("-----------------------------", module_name)
-
 
     train_success = False
     # Step 1: Run the training function, passing hyperparameters
@@ -105,10 +121,11 @@ if __name__ == "__main__":
             start_steps=START_STEPS,
             updates_per_step=UPDATES_PER_STEP,
             save_freq_multiplier=SAVE_FREQ_MULTIPLIER,
-            checkpoint_base_dir=CHECKPOINT_BASE_DIR
+            checkpoint_base_dir=CHECKPOINT_BASE_DIR,
+            use_velocity_clamping=USE_VELOCITY_CLAMPING,
             # Pass other agent hyperparams if needed
         )
-        train_success = True # Assume success if no exception is raised
+        train_success = True  # Assume success if no exception is raised
         log_success("Training function completed.", module_name)
     except SystemExit as e:
         log_warning(f"Training function exited with code {e.code}.", module_name)
@@ -116,12 +133,11 @@ if __name__ == "__main__":
         train_success = (e.code == 0)
     except Exception as e:
         log_error(f"An error occurred during training: {e}", module_name)
-        log_error(traceback.format_exc(), module_name) # Log the full traceback
+        log_error(traceback.format_exc(), module_name)  # Log the full traceback
         train_success = False
 
     end_time_train = time.time()
     log_info(f"--- Training step finished in {end_time_train - start_time_train:.2f} seconds ---", module_name)
-
 
     # Step 2: Run the testing function if training was successful
     if train_success:
@@ -133,19 +149,20 @@ if __name__ == "__main__":
                 env_dim=ENV_DIM,
                 env_particles=ENV_PARTICLES,
                 env_max_steps=ENV_MAX_STEPS,
-                agent_step_size=AGENT_STEP_SIZE, # Must match trained model config
-                adaptive_nt_mode=ADAPTIVE_NT_MODE, # Must match trained model config
-                nt_range=NT_RANGE, # Must match trained model config
+                agent_step_size=AGENT_STEP_SIZE,  # Must match trained model config
+                adaptive_nt_mode=ADAPTIVE_NT_MODE,  # Must match trained model config
+                nt_range=NT_RANGE,  # Must match trained model config
                 num_eval_runs=NUM_EVAL_RUNS,
-                checkpoint_base_dir=CHECKPOINT_BASE_DIR # To find the model and save plots
+                checkpoint_base_dir=CHECKPOINT_BASE_DIR,  # To find the model and save plots
+                use_velocity_clamping=USE_VELOCITY_CLAMPING,
                 # Pass other agent hyperparams if needed for init before load
             )
             log_success("Testing function completed successfully.", module_name)
         except SystemExit as e:
-             log_warning(f"Testing function exited with code {e.code}.", module_name)
+            log_warning(f"Testing function exited with code {e.code}.", module_name)
         except Exception as e:
             log_error(f"An error occurred during testing: {e}", module_name)
-            log_error(traceback.format_exc(), module_name) # Log the full traceback
+            log_error(traceback.format_exc(), module_name)  # Log the full traceback
             # Log specific failure message for testing
             log_error("Testing function failed.", module_name)
 
