@@ -4,39 +4,15 @@
 
 import numpy as np
 import collections
-import time  # Optional: for basic timing comparison
 import traceback  # For logging exceptions
 from pathlib import Path  # To get module name
 
-# --- Import Logger ---
-try:
-    from LLM.Logs import logger
-    from LLM.Logs.logger import log_info, log_error, log_warning, log_success, log_header, log_debug
-except ImportError:
-    print("ERROR: Logger module not found at 'LLM.Logs.logger'. Please check path.")
-    print("Falling back to standard print statements.")
-    def log_info(msg, mod): print(f"INFO [{mod}]: {msg}")
-    def log_error(msg, mod): print(f"ERROR [{mod}]: {msg}")
-    def log_warning(msg, mod): print(f"WARNING [{mod}]: {msg}")
-    def log_success(msg, mod): print(f"SUCCESS [{mod}]: {msg}")
-    def log_header(msg, mod): print(f"HEADER [{mod}]: {msg}")
-    def log_debug(msg, mod): print(f"DEBUG [{mod}]: {msg}")
-
-# --- Project Imports ---
-try:
-    # Use the updated metrics class ID if it changes
-    from LLM.PSO.Metrics.SwarmMetricsVectorized import SwarmMetricsVectorized
-    from LLM.PSO.ObjectiveFunctions.ObjectiveFunction import ObjectiveFunction
-    from LLM.PSO.Cognitive.PositionSharing import KnowledgeSharingStrategy
-except ImportError as e:
-    print(f"ERROR [PsoVectorized Setup]: Failed to import necessary PSO modules: {e}")
-    print(f"ERROR [PsoVectorized Setup]: Ensure Metrics, ObjectiveFunctions, Cognitive modules are accessible.")
-    class SwarmMetricsVectorized: pass
-    class ObjectiveFunction: pass
-    class KnowledgeSharingStrategy: pass
+from LLM.Logs.logger import *
+from Metrics.SwarmMetricsVectorized import SwarmMetricsVectorized
 
 # --- Module Name for Logging ---
 module_name = Path(__file__).stem  # Gets 'PsoVectorized'
+
 
 class PSOVectorized:
     """
@@ -55,7 +31,7 @@ class PSOVectorized:
                  convergence_patience=50,
                  convergence_threshold_gbest=1e-8,
                  convergence_threshold_pbest_std=1e-6,
-                 stability_threshold=1e-3 # Note: stability_threshold is now used within metrics class if needed
+                 stability_threshold=1e-3  # Note: stability_threshold is now used within metrics class if needed
                  ):
         """
         Initializes the vectorized PSO algorithm.
@@ -69,19 +45,21 @@ class PSOVectorized:
         # --- Initialize Swarm State ---
         self.positions = np.random.uniform(low=self.bounds[0], high=self.bounds[1], size=(self.num_particles, self.dim))
         self.velocities = np.zeros((self.num_particles, self.dim))
-        self.previous_positions = self.positions.copy() # Initialize previous positions
+        self.previous_positions = self.positions.copy()  # Initialize previous positions
 
         # Initialize personal bests
         self.pbest_positions = self.positions.copy()
         try:
-            if hasattr(self.objective_function, 'evaluate_matrix') and callable(self.objective_function.evaluate_matrix):
+            if hasattr(self.objective_function, 'evaluate_matrix') and callable(
+                    self.objective_function.evaluate_matrix):
                 self.pbest_values = self.objective_function.evaluate_matrix(self.positions)
                 log_debug("Initialized pbest using evaluate_matrix.", module_name)
             else:
                 log_debug("evaluate_matrix not found, initializing pbest using loop.", module_name)
                 self.pbest_values = np.array([self.objective_function.evaluate(p) for p in self.positions])
         except Exception as e:
-            log_error(f"Error during initial pbest evaluation: {e}. Initializing pbest values to infinity.", module_name)
+            log_error(f"Error during initial pbest evaluation: {e}. Initializing pbest values to infinity.",
+                      module_name)
             log_error(traceback.format_exc(), module_name)
             self.pbest_values = np.full(self.num_particles, np.inf)
 
@@ -116,7 +94,7 @@ class PSOVectorized:
         try:
             # Pass stability_threshold if the metrics class uses it (e.g., for velocity-based stability)
             # If using Poli's stability, it's calculated based on omega, c1, c2 passed in compute.
-            self.metrics_calculator = SwarmMetricsVectorized() # No threshold needed if using Poli's
+            self.metrics_calculator = SwarmMetricsVectorized()  # No threshold needed if using Poli's
         except NameError:
             log_error("SwarmMetricsVectorized class not found. Metrics calculation disabled.", module_name)
             self.metrics_calculator = None
@@ -126,7 +104,7 @@ class PSOVectorized:
 
     def optimize_step(self, omega, c1, c2):
         """
-        Performs one vectorized step of the PSO optimization.
+        Performs one step of the PSO optimization.
 
         Args:
             omega (float): Inertia weight used for this step's velocity update.
@@ -162,15 +140,19 @@ class PSOVectorized:
         self.positions += self.velocities
 
         # --- Apply Boundary Constraints ---
+        # TODO This must disable particles instead of clipping
         self.positions = np.clip(self.positions, self.bounds[0], self.bounds[1])
 
         # --- Evaluate New Positions ---
         fitness_values = np.full(self.num_particles, np.inf)
         try:
-            if hasattr(self.objective_function, 'evaluate_matrix') and callable(self.objective_function.evaluate_matrix):
+            if hasattr(self.objective_function, 'evaluate_matrix') and callable(
+                    self.objective_function.evaluate_matrix):
                 fitness_values = self.objective_function.evaluate_matrix(self.positions)
                 if fitness_values.shape != (self.num_particles,):
-                    log_warning(f"evaluate_matrix returned unexpected shape {fitness_values.shape}. Falling back to loop.", module_name)
+                    log_warning(
+                        f"evaluate_matrix returned unexpected shape {fitness_values.shape}. Falling back to loop.",
+                        module_name)
                     fitness_values = np.array([self.objective_function.evaluate(p) for p in self.positions])
             else:
                 log_debug("evaluate_matrix not found, using loop evaluation.", module_name)
@@ -197,7 +179,8 @@ class PSOVectorized:
                 self.gbest_position = self.pbest_positions[current_min_idx].copy()
 
         # --- Track GBest History ---
-        value_to_add = self.gbest_value if np.isfinite(self.gbest_value) else (self._gbest_history[-1] if self._gbest_history else float('inf'))
+        value_to_add = self.gbest_value if np.isfinite(self.gbest_value) else (
+            self._gbest_history[-1] if self._gbest_history else float('inf'))
         self._gbest_history.append(value_to_add)
 
         # --- Calculate Metrics using External Calculator ---
@@ -207,17 +190,17 @@ class PSOVectorized:
                 # Pass previous positions and current control parameters
                 metrics = self.metrics_calculator.compute(
                     positions=self.positions,
-                    previous_positions=self.previous_positions, # Pass previous positions
+                    previous_positions=self.previous_positions,  # Pass previous positions
                     velocities=self.velocities,
                     bounds=self.bounds,
-                    omega=omega, # Pass omega
-                    c1=c1,       # Pass c1
-                    c2=c2        # Pass c2
+                    omega=omega,  # Pass omega
+                    c1=c1,  # Pass c1
+                    c2=c2  # Pass c2
                 )
             except Exception as e:
                 log_error(f"Error computing metrics: {e}", module_name)
-                log_error(traceback.format_exc(), module_name) # Log traceback for metrics error
-        metrics['gbest_value'] = self.gbest_value # Add gbest for convenience
+                log_error(traceback.format_exc(), module_name)  # Log traceback for metrics error
+        metrics['gbest_value'] = self.gbest_value  # Add gbest for convenience
 
         # --- Check for Swarm Convergence ---
         converged = self._check_convergence()
@@ -232,7 +215,7 @@ class PSOVectorized:
             history_start_val = self._gbest_history[0]
             if np.isfinite(history_start_val) and np.isfinite(self.gbest_value):
                 improvement = history_start_val - self.gbest_value
-                if improvement < self.convergence_threshold_gbest and improvement >= 0:
+                if self.convergence_threshold_gbest > improvement >= 0:
                     self._stagnation_counter += 1
                 else:
                     self._stagnation_counter = 0
@@ -253,15 +236,21 @@ class PSOVectorized:
 
         if len(finite_pbest_values) < 2:
             diversity_low = gbest_stagnated
-            log_debug(f"Diversity check: Not enough finite pbest values ({len(finite_pbest_values)}). diversity_low set to {diversity_low}.", module_name)
+            log_debug(
+                f"Diversity check: Not enough finite pbest values ({len(finite_pbest_values)}). diversity_low set to {diversity_low}.",
+                module_name)
         else:
             pbest_std_dev = np.std(finite_pbest_values)
             diversity_low = pbest_std_dev < self.convergence_threshold_pbest_std
-            log_debug(f"Diversity check: PBest Std Dev = {pbest_std_dev:.2e}. Threshold = {self.convergence_threshold_pbest_std:.2e}. diversity_low = {diversity_low}", module_name)
+            log_debug(
+                f"Diversity check: PBest Std Dev = {pbest_std_dev:.2e}. Threshold = {self.convergence_threshold_pbest_std:.2e}. diversity_low = {diversity_low}",
+                module_name)
 
         # 3. Combine Conditions
         if gbest_stagnated and diversity_low:
-            log_debug(f"Convergence detected: GBest Stagnated ({self._stagnation_counter} steps) & PBest Std Dev ({pbest_std_dev:.2e}) low.", module_name)
+            log_debug(
+                f"Convergence detected: GBest Stagnated ({self._stagnation_counter} steps) & PBest Std Dev ({pbest_std_dev:.2e}) low.",
+                module_name)
             return True
 
         return False
@@ -269,8 +258,8 @@ class PSOVectorized:
     def reset_convergence_tracking(self):
         """Resets gbest history and stagnation counter."""
         self._gbest_history.clear()
-        initial_gbest = self.gbest_value if hasattr(self, 'gbest_value') and np.isfinite(self.gbest_value) else float('inf')
+        initial_gbest = self.gbest_value if hasattr(self, 'gbest_value') and np.isfinite(self.gbest_value) else float(
+            'inf')
         self._gbest_history.append(initial_gbest)
         self._stagnation_counter = 0
         log_debug("Convergence tracking reset.", module_name)
-
