@@ -6,34 +6,13 @@
 
 import torch
 import numpy as np
-import matplotlib.pyplot as plt
 import os
 import time
-import random
-import sys
 import collections
 import traceback  # For logging exceptions
 from pathlib import Path
-
-# --- Import Logger ---
-try:
-    from LLM.Logs import logger
-    from LLM.Logs.logger import log_info, log_error, log_warning, log_success, log_header, log_debug
-except ImportError:
-    print("ERROR: Logger module not found at 'LLM.Logs.logger'. Please check path.")
-    print("Falling back to standard print statements.")
-    def log_info(msg, mod): print(f"INFO [{mod}]: {msg}")
-    def log_error(msg, mod): print(f"ERROR [{mod}]: {msg}")
-    def log_warning(msg, mod): print(f"WARNING [{mod}]: {msg}")
-    def log_success(msg, mod): print(f"SUCCESS [{mod}]: {msg}")
-    def log_header(msg, mod): print(f"HEADER [{mod}]: {msg}")
-    def log_debug(msg, mod): print(f"DEBUG [{mod}]: {msg}")
-
-# --- Project Imports ---
 from LLM.RL.ActorCritic.Agent import SACAgent
-# Use the aligned PSO_Gym_Vectorized
 from LLM.SAPSO.Gyms.PSO_Gym_Vectorized import PSOEnvVectorized
-from LLM.PSO.ObjectiveFunctions.ObjectiveFunction import ObjectiveFunction
 from LLM.SAPSO.graphics.graphing import (
     plot_evaluation_parameters,
     plot_stable_particles,
@@ -42,20 +21,9 @@ from LLM.SAPSO.graphics.graphing import (
     plot_swarm_diversity,
     plot_gbest_convergence
 )
-# --- Static Imports for Testing Objective Functions ---
-from LLM.PSO.ObjectiveFunctions.Testing.CrossLegTable import CrossLegTableFunction
-from LLM.PSO.ObjectiveFunctions.Testing.Lanczos import Lanczos3Function
-from LLM.PSO.ObjectiveFunctions.Testing.Michalewicz import MichalewiczFunction
-from LLM.PSO.ObjectiveFunctions.Testing.Schaffer import Schaffer4Function
-from LLM.PSO.ObjectiveFunctions.Testing.SineEnvelope import SineEnvelopeFunction
-from LLM.PSO.ObjectiveFunctions.Testing.StretchedVSineWave import StretchedVSineWaveFunction
-from LLM.PSO.ObjectiveFunctions.Testing.Wavy import WavyFunction
 
-# --- Manually Create List of Test Objective Function Classes ---
-test_objective_function_classes = [
-    CrossLegTableFunction, Lanczos3Function, MichalewiczFunction, Schaffer4Function,
-    SineEnvelopeFunction, StretchedVSineWaveFunction, WavyFunction
-]
+from LLM.Logs.logger import *
+from LLM.PSO.ObjectiveFunctions.Testing.Loader import test_objective_function_classes
 
 # --- Main Testing Function (Accepts Arguments) ---
 def test_agent(

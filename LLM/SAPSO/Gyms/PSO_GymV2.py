@@ -8,7 +8,7 @@ import math
 # Use the modified PSO class that returns the 'converged' flag
 from LLM.PSO.PSO import PSO
 # Example function and strategy (can be changed)
-from LLM.PSO.ObjectiveFunctions.Training.Rastrgin import RastriginFunction
+from LLM.PSO.ObjectiveFunctions.Training.Functions.Rastrgin import RastriginFunction
 from LLM.PSO.Cognitive.LBest import LocalBestStrategy
 # Assuming SwarmMetrics and compute_swarm_metrics are available
 from LLM.PSO.Metrics.SwarmMetrics import SwarmMetrics, compute_swarm_metrics

@@ -13,119 +13,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import time
-import random
-import sys
 import traceback  # For logging exceptions
 from pathlib import Path
-
-# --- Import Logger ---
-# Using the specified import path: from LLM.Logs import logger
-try:
-    # Import the module first if needed, then specific functions
-    from LLM.Logs import logger
-    from LLM.Logs.logger import log_info, log_error, log_warning, log_success, log_header, log_debug
-except ImportError:
-    # Fallback print if logger fails to import
-    print("ERROR: Logger module not found at 'LLM.Logs.logger'. Please check path.")
-    print("Falling back to standard print statements.")
-
-
-    # Define dummy functions
-    def log_info(msg, mod):
-        print(f"INFO [{mod}]: {msg}")
-
-
-    def log_error(msg, mod):
-        print(f"ERROR [{mod}]: {msg}")
-
-
-    def log_warning(msg, mod):
-        print(f"WARNING [{mod}]: {msg}")
-
-
-    def log_success(msg, mod):
-        print(f"SUCCESS [{mod}]: {msg}")
-
-
-    def log_header(msg, mod):
-        print(f"HEADER [{mod}]: {msg}")
-
-
-    def log_debug(msg, mod):
-        print(f"DEBUG [{mod}]: {msg}")  # Optional debug
-
-# --- Project Imports (Absolute Paths) ---
-# Removed try-except block around these imports as requested
 from LLM.RL.ActorCritic.Agent import SACAgent
 from LLM.RL.Replay.ReplayBuffer import ReplayBuffer
 from LLM.SAPSO.Gyms.PSO_Gym_Vectorized import PSOEnvVectorized
-from LLM.PSO.ObjectiveFunctions.ObjectiveFunction import ObjectiveFunction
-from LLM.PSO.ObjectiveFunctions.Training.Ackley import AckleyFunction
-from LLM.PSO.ObjectiveFunctions.Training.Alpine import AlpineFunction
-from LLM.PSO.ObjectiveFunctions.Training.Bohachevsky import BohachevskyFunction
-from LLM.PSO.ObjectiveFunctions.Training.BonyadiMichalewicz import BonyadiMichalewiczFunction
-from LLM.PSO.ObjectiveFunctions.Training.Brown import BrownFunction
-from LLM.PSO.ObjectiveFunctions.Training.CosineMixture import CosineMixtureFunction
-from LLM.PSO.ObjectiveFunctions.Training.DeflectedCorrugatedSpring import DeflectedCorrugatedSpringFunction
-from LLM.PSO.ObjectiveFunctions.Training.Discuss import DiscussFunction
-from LLM.PSO.ObjectiveFunctions.Training.DropWave import DropWaveFunction
-from LLM.PSO.ObjectiveFunctions.Training.EggCrate import EggCrateFunction
-from LLM.PSO.ObjectiveFunctions.Training.EggHolder import EggHolderFunction
-from LLM.PSO.ObjectiveFunctions.Training.Elliptic import EllipticFunction
-from LLM.PSO.ObjectiveFunctions.Training.Exponential import ExponentialFunction
-from LLM.PSO.ObjectiveFunctions.Training.Giunta2D import GiuntaFunction
-from LLM.PSO.ObjectiveFunctions.Training.HolderTable import HolderTable1Function
-from LLM.PSO.ObjectiveFunctions.Training.Levy import Levy3Function
-from LLM.PSO.ObjectiveFunctions.Training.LevyMontalvo import LevyMontalvo2Function
-from LLM.PSO.ObjectiveFunctions.Training.Mishra import Mishra1Function, Mishra4Function
-from LLM.PSO.ObjectiveFunctions.Training.NeedleEye import NeedleEyeFunction
-from LLM.PSO.ObjectiveFunctions.Training.Norweigan import NorwegianFunction  # Corrected class name if needed
-from LLM.PSO.ObjectiveFunctions.Training.Pathological import PathologicalFunction
-from LLM.PSO.ObjectiveFunctions.Training.Penalty import Penalty1Function, Penalty2Function
-from LLM.PSO.ObjectiveFunctions.Training.Periodic import PeriodicFunction
-from LLM.PSO.ObjectiveFunctions.Training.Pinter import PinterFunction
-from LLM.PSO.ObjectiveFunctions.Training.Price import Price2Function
-from LLM.PSO.ObjectiveFunctions.Training.Qings import QingsFunction
-from LLM.PSO.ObjectiveFunctions.Training.Quadratic import QuadricFunction
-from LLM.PSO.ObjectiveFunctions.Training.Quintic import QuinticFunction
-from LLM.PSO.ObjectiveFunctions.Training.Rana import RanaFunction
-from LLM.PSO.ObjectiveFunctions.Training.Rastrgin import RastriginFunction
-from LLM.PSO.ObjectiveFunctions.Training.Ripple import Ripple25Function
-from LLM.PSO.ObjectiveFunctions.Training.Rosenbrock import RosenbrockFunction
-from LLM.PSO.ObjectiveFunctions.Training.Salomon import SalomonFunction
-from LLM.PSO.ObjectiveFunctions.Training.Schubert import Schubert4Function
-from LLM.PSO.ObjectiveFunctions.Training.Schwefel import Schwefel1Function
-from LLM.PSO.ObjectiveFunctions.Training.Sinusoidal import SinusoidalFunction
-from LLM.PSO.ObjectiveFunctions.Training.Step import StepFunction3
-from LLM.PSO.ObjectiveFunctions.Training.Trid import TridFunction
-from LLM.PSO.ObjectiveFunctions.Training.Trigonometric import TrigonometricFunction
-from LLM.PSO.ObjectiveFunctions.Training.Vincent import VincentFunction
-from LLM.PSO.ObjectiveFunctions.Training.Weierstrass import WeierstrassFunction
-from LLM.PSO.ObjectiveFunctions.Training.XinSheYang import XinSheYang1Function, XinSheYang2Function
 
-# --- End Project Imports ---
-
-
-# --- Manually Create List of Objective Function Classes ---
-# (List remains the same)
-objective_function_classes = [
-    AckleyFunction, AlpineFunction, BohachevskyFunction, BonyadiMichalewiczFunction,
-    BrownFunction, CosineMixtureFunction, DeflectedCorrugatedSpringFunction,
-    DiscussFunction, DropWaveFunction, EggCrateFunction, EggHolderFunction,
-    EllipticFunction, ExponentialFunction, GiuntaFunction, HolderTable1Function,
-    Levy3Function, LevyMontalvo2Function, Mishra1Function, Mishra4Function,
-    NeedleEyeFunction, NorwegianFunction, PathologicalFunction, Penalty1Function,
-    Penalty2Function, PeriodicFunction, PinterFunction, Price2Function,
-    QingsFunction, QuadricFunction, QuinticFunction, RanaFunction, RastriginFunction,
-    Ripple25Function, RosenbrockFunction, SalomonFunction, Schubert4Function,
-    Schwefel1Function, SinusoidalFunction, StepFunction3, TridFunction,
-    TrigonometricFunction, VincentFunction, WeierstrassFunction, XinSheYang1Function,
-    XinSheYang2Function
-]
-
-
-# --- End Manual List ---
-
+from LLM.PSO.ObjectiveFunctions.Training.Loader import objective_function_classes
+from LLM.Logs.logger import *
 
 # --- Main Training Function (Accepts Arguments) ---
 def train_agent(

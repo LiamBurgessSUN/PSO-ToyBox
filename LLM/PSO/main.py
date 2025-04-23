@@ -1,5 +1,5 @@
 from LLM.PSO.Cognitive.LBest import LocalBestStrategy
-from LLM.PSO.ObjectiveFunctions.Training.Trigonometric import TrigonometricFunction
+from LLM.PSO.ObjectiveFunctions.Training.Functions.Trigonometric import TrigonometricFunction
 from LLM.PSO.PSO import PSO
 from LLM.Visualizer import SwarmVisualizer
 

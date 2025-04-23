@@ -6,7 +6,6 @@
 import gymnasium as gym
 import numpy as np
 import math
-import collections
 import traceback
 from pathlib import Path
 
@@ -29,11 +28,10 @@ except ImportError:
 # --- Project Imports ---
 # Use the updated PsoVectorized class ID if it changed
 from LLM.PSO.PsoVectorized import PSOVectorized
-from LLM.PSO.ObjectiveFunctions.Training.Rastrgin import RastriginFunction
-from LLM.PSO.Cognitive.LBest import LocalBestStrategy
+from LLM.PSO.ObjectiveFunctions.Training.Functions.Rastrgin import RastriginFunction
+
 # Metrics class is instantiated within PsoVectorized now, no direct import needed here usually
 # but keep for clarity if needed elsewhere.
-from LLM.PSO.Metrics.SwarmMetricsVectorized import SwarmMetricsVectorized
 
 
 # --- Module Name for Logging ---
