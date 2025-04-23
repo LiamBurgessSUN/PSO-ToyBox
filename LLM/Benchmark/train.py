@@ -11,15 +11,14 @@
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
-import os
 import time
 import traceback  # For logging exceptions
 from pathlib import Path
-from LLM.RL.ActorCritic.Agent import SACAgent
-from LLM.RL.Replay.ReplayBuffer import ReplayBuffer
-from LLM.SAPSO.Gyms.PSO_Gym_Vectorized import PSOEnvVectorized
+from LLM.SAPSO.RL.ActorCritic import SACAgent
+from LLM.SAPSO.RL.Replay.ReplayBuffer import ReplayBuffer
+from LLM.SAPSO.Environment.Environment import Environment
 
-from LLM.PSO.ObjectiveFunctions.Training.Loader import objective_function_classes
+from LLM.SAPSO.PSO.ObjectiveFunctions.Training.Loader import objective_function_classes
 from LLM.Logs.logger import *
 
 # --- Main Training Function (Accepts Arguments) ---
@@ -65,7 +64,7 @@ def train_agent(
         # Ensure num_particles is passed to the objective function constructor if needed
         temp_obj_func = objective_function_classes[0](dim=env_dim)  # num_particles not needed by func directly
         # --- Use PSOEnvVectorized ---
-        temp_env = PSOEnvVectorized(
+        temp_env = Environment(
             obj_func=temp_obj_func,
             num_particles=env_particles,  # Pass num_particles here
             max_steps=env_max_steps,
@@ -171,7 +170,7 @@ def train_agent(
                 obj_func_instance = selected_func_class(dim=current_dim)
 
                 # --- Use PSOEnvVectorized ---
-                train_env = PSOEnvVectorized(
+                train_env = Environment(
                     obj_func=obj_func_instance,
                     num_particles=env_particles,  # Pass num_particles
                     max_steps=env_max_steps,

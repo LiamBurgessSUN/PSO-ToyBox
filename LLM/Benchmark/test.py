@@ -1,13 +1,12 @@
 import torch
 import numpy as np
-import os
 import time
 import collections
 import traceback  # For logging exceptions
 from pathlib import Path
-from LLM.RL.ActorCritic.Agent import SACAgent
-from LLM.SAPSO.Gyms.PSO_Gym_Vectorized import PSOEnvVectorized
-from LLM.SAPSO.graphics.graphing import (
+from LLM.SAPSO.RL.ActorCritic import SACAgent
+from LLM.SAPSO.Environment.Environment import Environment
+from LLM.SAPSO.Graphics.graphing import (
     plot_evaluation_parameters,
     plot_stable_particles,
     plot_infeasible_particles,
@@ -17,7 +16,7 @@ from LLM.SAPSO.graphics.graphing import (
 )
 
 from LLM.Logs.logger import *
-from LLM.PSO.ObjectiveFunctions.Testing.Loader import test_objective_function_classes
+from LLM.SAPSO.PSO.ObjectiveFunctions.Testing.Loader import test_objective_function_classes
 
 # --- Main Testing Function (Accepts Arguments) ---
 def test_agent(
@@ -71,7 +70,7 @@ def test_agent(
     log_info("Creating temporary vectorized environment to get dimensions...", module_name)
     try:
         temp_obj_func = test_objective_function_classes[0](dim=env_dim)
-        temp_env = PSOEnvVectorized(
+        temp_env = Environment(
             obj_func=temp_obj_func,
             num_particles=env_particles,
             max_steps=env_max_steps,
@@ -145,7 +144,7 @@ def test_agent(
             try:
                 current_dim = env_dim
                 obj_func_instance = func_class(dim=current_dim)
-                eval_env = PSOEnvVectorized(
+                eval_env = Environment(
                     obj_func=obj_func_instance,
                     num_particles=env_particles,
                     max_steps=env_max_steps,
