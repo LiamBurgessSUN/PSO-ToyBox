@@ -1,9 +1,3 @@
-# test.py - Place in PSO-ToyBox/LLM/Benchmark/
-# Uses static imports and accepts hyperparameters as arguments
-# Calculates and prints NORMALIZED final gbest mean/std
-# --- UPDATED TO USE CORRECT 'swarm_diversity' KEY ---
-# --- ADDED CHECK for stability_ratio value ---
-
 import torch
 import numpy as np
 import os
