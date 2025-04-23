@@ -32,7 +32,6 @@ class Environment(gym.Env):
     Environment for PSO using the vectorized PSO implementation (PSOVectorized).
     Uses updated metrics aligned with the research paper.
     """
-    metadata = {'render_modes': [], 'render_fps': 4}
 
     def __init__(self,
                  obj_func=RastriginFunction(dim=30),

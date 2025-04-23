@@ -24,7 +24,9 @@ class PSOVectorized:
         previous_positions (np.ndarray): Positions from the previous step.
     """
 
-    def __init__(self, objective_function, num_particles,
+    def __init__(self,
+                 objective_function,
+                 num_particles,
                  strategy=None,
                  v_clamp_ratio=0.2,
                  use_velocity_clamping=True,
