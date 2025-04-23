@@ -8,7 +8,7 @@ import traceback  # For logging exceptions
 from pathlib import Path  # To get module name
 
 from LLM.Logs.logger import *
-from Metrics.SwarmMetricsVectorized import SwarmMetricsVectorized
+from LLM.SAPSO.PSO.Metrics.SwarmMetricsVectorized import SwarmMetricsVectorized
 
 # --- Module Name for Logging ---
 module_name = Path(__file__).stem  # Gets 'PsoVectorized'

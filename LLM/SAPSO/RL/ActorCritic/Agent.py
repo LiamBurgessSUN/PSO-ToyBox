@@ -16,8 +16,8 @@ from LLM.Logs.logger import log_info, log_error, log_warning, log_success, log_h
 # --- Project Imports ---
 # Assuming Actor and Critic are in the same directory (ActorCritic)
 # Direct relative import is standard practice within a package.
-from Actor import Actor
-from Critic import QNetwork
+from LLM.SAPSO.RL.ActorCritic.Actor import Actor
+from LLM.SAPSO.RL.ActorCritic.Critic import QNetwork
 
 
 # --- Module Name for Logging ---

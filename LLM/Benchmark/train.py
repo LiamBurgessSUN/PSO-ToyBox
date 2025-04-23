@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import time
 import traceback  # For logging exceptions
 from pathlib import Path
-from LLM.SAPSO.RL.ActorCritic import SACAgent
+from LLM.SAPSO.RL.ActorCritic.Agent import SACAgent
 from LLM.SAPSO.RL.Replay.ReplayBuffer import ReplayBuffer
 from LLM.SAPSO.Environment.Environment import Environment
 

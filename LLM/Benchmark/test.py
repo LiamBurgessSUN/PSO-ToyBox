@@ -4,7 +4,7 @@ import time
 import collections
 import traceback  # For logging exceptions
 from pathlib import Path
-from LLM.SAPSO.RL.ActorCritic import SACAgent
+from LLM.SAPSO.RL.ActorCritic.Agent import SACAgent
 from LLM.SAPSO.Environment.Environment import Environment
 from LLM.SAPSO.Graphics.graphing import (
     plot_evaluation_parameters,
