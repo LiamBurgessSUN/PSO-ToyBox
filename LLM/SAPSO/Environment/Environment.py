@@ -320,8 +320,9 @@ class Environment(gym.Env):
         """
         Calculates the observation vector from swarm metrics, aligned with paper.
         Uses: [squashed_norm_avg_vel, feasible_ratio, stability_ratio (Poli), percent_completion]
+        Velocity normalization calculation updated to conform closer to Eq. 22 structure.
         """
-        # Use the average *current* velocity magnitude for the velocity component (matches Eq. 22)
+        # Use the average *current* velocity magnitude (scalar) for the velocity component
         avg_vel = metrics.get('avg_current_velocity_magnitude', 0.0)
         # Use infeasible ratio to get feasible ratio
         infeasible_ratio = metrics.get('infeasible_ratio', 1.0)  # Default to 1.0 (0% feasible) if missing
@@ -329,24 +330,40 @@ class Environment(gym.Env):
         # Use stability ratio based on Poli's condition
         stable_ratio = metrics.get('stability_ratio', 0.0)  # Default to 0.0 (unstable) if missing
 
-        # Normalize average velocity using tanh squashing (Eq 22 adaptation)
+        # --- Updated Velocity Normalization (closer to Eq. 22 structure, applied to avg_vel) ---
         l, u = self.pso.bounds
         range_width = u - l
-        squashed_norm_avg_vel = 0.0
+        squashed_norm_avg_vel = 0.0 # Default value
+
         if np.isclose(range_width, 0):
-            squashed_norm_avg_vel = 0.5  # Represents zero velocity in [-1,1] -> [0,1] mapping
+            # Handle case where search space range is zero (e.g., 1D problem with bounds [5, 5])
+            # A velocity of 0 should map to 0.5 in the [0, 1] range.
+            # Any non-zero velocity in this case is technically infinite relative to the range.
+            # We map non-zero velocity to 1.0 (max value in [0,1]).
+            squashed_norm_avg_vel = 0.5 if np.isclose(avg_vel, 0) else 1.0
+            log_debug(f"Zero range width detected. Avg Vel: {avg_vel:.2e}. Normalized Vel: {squashed_norm_avg_vel}", module_name)
         else:
-            scale = 0.5 * range_width
-            tanh_arg = avg_vel / scale if scale > 0 else avg_vel
-            normalized_vel_component = math.tanh(tanh_arg)
+            # Calculate center and scaling factor based on Eq. 22 structure
+            center = (u + l) / 2.0
+            scale_factor = 2.0 / range_width # Equivalent to 1 / (0.5 * range_width)
+
+            # Apply centering and scaling to the average velocity magnitude
+            centered_scaled_avg_vel = scale_factor * (avg_vel - center)
+
+            # Apply tanh squashing
+            normalized_vel_component = math.tanh(centered_scaled_avg_vel) # Result in [-1, 1]
+
+            # Map the [-1, 1] result to [0, 1] for the observation space
             squashed_norm_avg_vel = (normalized_vel_component + 1.0) / 2.0
+            log_debug(f"Vel Norm: avg_vel={avg_vel:.3e}, centered_scaled={centered_scaled_avg_vel:.3f}, tanh={normalized_vel_component:.3f}, final={squashed_norm_avg_vel:.3f}", module_name)
+        # --- End Updated Velocity Normalization ---
 
         # Calculate percentage completion
         percent_completion = self.current_step / self.max_steps if self.max_steps > 0 else 1.0
 
         # Construct the observation vector
         obs_vec = np.array([
-            np.clip(squashed_norm_avg_vel, 0.0, 1.0),
+            np.clip(squashed_norm_avg_vel, 0.0, 1.0), # Use the newly calculated velocity component
             np.clip(feasible_ratio, 0.0, 1.0),
             np.clip(stable_ratio, 0.0, 1.0),  # Use Poli's stability ratio
             np.clip(percent_completion, 0.0, 1.0)
