@@ -172,8 +172,8 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
-/LLM/SAPSO/RL/Environment/Gym/sac_pendulum_checkpoint.pth
-/LLM/SAPSO/mains/checkpoints/
-/LLM/SAPSO/mains/checkpoints_sapso/
-/LLM/Benchmark/models/checkpoints_sapso_trained_static/
-/LLM/Benchmark/models/
+/SAPSO_AGENT/SAPSO/RL/Environment/Gym/sac_pendulum_checkpoint.pth
+/SAPSO_AGENT/SAPSO/mains/checkpoints/
+/SAPSO_AGENT/SAPSO/mains/checkpoints_sapso/
+/SAPSO_AGENT/Benchmark/models/checkpoints_sapso_trained_static/
+/SAPSO_AGENT/Benchmark/models/
