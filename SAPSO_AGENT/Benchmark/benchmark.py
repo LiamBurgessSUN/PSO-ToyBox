@@ -3,23 +3,21 @@
 # Uses the custom logger from SAPSO_AGENT.Logs.
 
 import time
-import sys  # Import sys for exit
 from pathlib import Path
 import traceback  # Import traceback for logging errors
 
 # --- Import Logger ---
 # Using the specified import path
 
-from SAPSO_AGENT.Logs import logger
 # Import specific helper functions if they exist in logger module
 # Assuming standard names like log_info, log_error etc.
-from SAPSO_AGENT.Logs.logger import log_info, log_error, log_warning, log_success, log_header, log
+from SAPSO_AGENT.Logs.logger import log_info, log_error, log_warning, log_success, log_header
 
 # --- Import Benchmark Functions ---
 # Removed the try-except block as requested
 from SAPSO_AGENT.Benchmark.test import test_agent
 from SAPSO_AGENT.Benchmark.train import train_agent
-from CONFIG import *
+from SAPSO_AGENT.CONFIG import *
 
 if __name__ == "__main__":
 

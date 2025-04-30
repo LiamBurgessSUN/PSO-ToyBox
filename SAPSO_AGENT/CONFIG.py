@@ -27,4 +27,4 @@ NUM_EVAL_RUNS = 30  # Number of deterministic runs per test function
 # --- Checkpoint/Output Config ---
 # Construct paths relative to the project root found earlier
 # (Checkpoint filenames are constructed inside train/test based on config)
-CHECKPOINT_BASE_DIR = "models"  # Relative path for models/checkpoints
+CHECKPOINT_BASE_DIR = "Benchmark/models"  # Relative path for models/checkpoints
