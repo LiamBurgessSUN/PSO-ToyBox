@@ -1,4 +1,4 @@
-# File: PSO-ToyBox/SAPSO_AGENT/PSO/Metrics/SwarmMetricsVectorized.py
+# File: PSO-ToyBox/SAPSO_AGENT/PSO/Metrics/Metrics.py
 # Updated to align metric calculations more closely with definitions in
 # mathematics-12-03481.pdf (Section 4.1) and accept necessary parameters.
 # Added NaN check for input positions.

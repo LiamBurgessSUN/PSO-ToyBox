@@ -1,4 +1,4 @@
-# File: PSO-ToyBox/SAPSO_AGENT/PSO/PsoVectorized.py
+# File: PSO-ToyBox/SAPSO_AGENT/PSO/PSO.py
 # Modified to store previous positions and pass necessary parameters
 # to the metrics calculator for paper-aligned metric calculations.
 # --- UPDATED optimize_step to handle boundary constraints as per paper (assign inf fitness) ---
@@ -9,7 +9,7 @@ import traceback  # For logging exceptions
 from pathlib import Path  # To get module name
 
 from SAPSO_AGENT.Logs.logger import *
-from SAPSO_AGENT.SAPSO.PSO.Metrics.SwarmMetricsVectorized import SwarmMetricsVectorized
+from SAPSO_AGENT.SAPSO.PSO.Metrics.Metrics import SwarmMetricsVectorized
 
 # --- Module Name for Logging ---
 module_name = Path(__file__).stem  # Gets 'PsoVectorized'

@@ -1,7 +1,3 @@
-# File: PSO-ToyBox/SAPSO_AGENT/SAPSO/Environment/Environment.py
-# Refactored to align with updated PsoVectorized and SwarmMetricsVectorized,
-# ensuring metrics used for observation match paper definitions where possible.
-
 # --- Imports ---
 import gymnasium as gym
 import numpy as np
@@ -16,16 +12,10 @@ from SAPSO_AGENT.Logs.logger import log_info, log_error, log_warning, log_succes
 
 # --- Project Imports ---
 # Use the updated PsoVectorized class ID if it changed
-from SAPSO_AGENT.SAPSO.PSO.PsoVectorized import PSOVectorized
+from SAPSO_AGENT.SAPSO.PSO.PSO import PSOVectorized
 from SAPSO_AGENT.SAPSO.PSO.ObjectiveFunctions.Training.Functions.Rastrgin import RastriginFunction
 
-# Metrics class is instantiated within PsoVectorized now, no direct import needed here usually
-# but keep for clarity if needed elsewhere.
-
-
-# --- Module Name for Logging ---
 module_name = Path(__file__).stem  # Gets 'PSO_Gym_Vectorized'
-
 
 class Environment(gym.Env):
     """

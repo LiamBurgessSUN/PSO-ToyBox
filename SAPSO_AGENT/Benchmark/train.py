@@ -7,6 +7,7 @@
 # --- UPDATED to move all imports to top ---
 # --- UPDATED to normalize final gbest statistics ---
 # --- UPDATED to use logger ---
+import random
 
 import torch
 import numpy as np
@@ -156,7 +157,8 @@ def train_agent(
     train_start_time = time.time()
 
     # Outer loop: Iterate through each objective function
-    for func_index, selected_func_class in enumerate(objective_function_classes):
+    random.shuffle(objective_function_classes)
+    for func_index, selected_func_class in enumerate(objective_function_classes[:5]):
         func_name = selected_func_class.__name__
         log_header(f"===== Training on Function {func_index + 1}/{len(objective_function_classes)}: {func_name} =====",
                    module_name)
