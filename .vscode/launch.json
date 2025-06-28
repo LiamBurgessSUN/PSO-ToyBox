@@ -1,0 +1,136 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run Benchmark (Training + Testing)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/SAPSO_AGENT/Benchmark/benchmark.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "justMyCode": true,
+            "description": "Run the complete training and testing pipeline"
+        },
+        {
+            "name": "Run Training Only",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/SAPSO_AGENT/Benchmark/train.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "justMyCode": true,
+            "description": "Run only the training process"
+        },
+        {
+            "name": "Run Testing Only",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/SAPSO_AGENT/Benchmark/test.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "justMyCode": true,
+            "description": "Run only the testing/evaluation process"
+        },
+        {
+            "name": "Run Function Visualizer",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/Function_Visualizers/surface.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}",
+                "MPLBACKEND": "TkAgg"
+            },
+            "justMyCode": true,
+            "description": "Run the 3D function visualization script"
+        },
+        {
+            "name": "Debug Environment",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/debug_env.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "justMyCode": false,
+            "description": "Debug the PSO environment with breakpoints"
+        },
+        {
+            "name": "Debug SAC Agent",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/debug_agent.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "justMyCode": false,
+            "description": "Debug the SAC agent implementation"
+        },
+        {
+            "name": "Run Current File",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "justMyCode": true,
+            "description": "Run the currently open Python file"
+        },
+        {
+            "name": "Debug Current File",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "justMyCode": false,
+            "description": "Debug the currently open Python file with breakpoints"
+        },
+        {
+            "name": "Run PSO Vectorized Test",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/test_pso_vectorized.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "justMyCode": true,
+            "description": "Test the vectorized PSO implementation"
+        },
+        {
+            "name": "Run Metrics Test",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/test_metrics.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "justMyCode": true,
+            "description": "Test the metrics calculation system"
+        }
+    ]
+} 

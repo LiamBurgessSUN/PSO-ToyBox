@@ -330,5 +330,3 @@ def test_agent(
             log_warning("Plot generation failed. Ensure graphing.py is compatible.", module_name)
     else:
         log_warning("No evaluation data was collected, skipping plot generation.", module_name)
-
-# --- Main execution block removed ---

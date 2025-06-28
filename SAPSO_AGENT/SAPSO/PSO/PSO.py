@@ -9,7 +9,7 @@ import traceback  # For logging exceptions
 from pathlib import Path  # To get module name
 
 from SAPSO_AGENT.Logs.logger import *
-from SAPSO_AGENT.SAPSO.PSO.Metrics.Metrics import SwarmMetricsVectorized
+from SAPSO_AGENT.SAPSO.PSO.Metrics.Metrics import SwarmMetrics
 
 # --- Module Name for Logging ---
 module_name = Path(__file__).stem  # Gets 'PsoVectorized'
@@ -112,7 +112,7 @@ class PSOVectorized:
         try:
             # Pass stability_threshold if the metrics class uses it (e.g., for velocity-based stability)
             # If using Poli's stability, it's calculated based on omega, c1, c2 passed in compute.
-            self.metrics_calculator = SwarmMetricsVectorized()  # No threshold needed if using Poli's
+            self.metrics_calculator = SwarmMetrics()  # No threshold needed if using Poli's
         except NameError:
             log_error("SwarmMetricsVectorized class not found. Metrics calculation disabled.", module_name)
             self.metrics_calculator = None

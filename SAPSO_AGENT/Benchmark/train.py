@@ -1,12 +1,3 @@
-# train.py - Place in PSO-ToyBox/SAPSO_AGENT/Benchmark/
-# Uses static imports (absolute paths from SAPSO_AGENT) for objective functions
-# Accepts hyperparameters as arguments
-# Trains N episodes for EACH function sequentially
-# Calculates and prints final training reward and NORMALIZED gbest mean/std
-# --- UPDATED TO USE PSOEnvVectorized ---
-# --- UPDATED to move all imports to top ---
-# --- UPDATED to normalize final gbest statistics ---
-# --- UPDATED to use logger ---
 import random
 
 import torch
@@ -434,6 +425,3 @@ def train_agent(
             log_warning("No valid average rewards per function to plot.", module_name)
     else:
         log_warning("No results logged for plotting average rewards per function.", module_name)
-
-# --- Main execution block removed ---
-# This script is intended to be called by benchmark.py

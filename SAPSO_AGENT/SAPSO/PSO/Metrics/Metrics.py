@@ -13,7 +13,7 @@ from SAPSO_AGENT.Logs.logger import *
 module_name = Path(__file__).stem  # Gets 'SwarmMetricsVectorized'
 
 
-class SwarmMetricsVectorized:
+class SwarmMetrics:
     """
     Calculates swarm metrics using vectorized NumPy operations, aligned with
     definitions in mathematics-12-03481.pdf where possible.
