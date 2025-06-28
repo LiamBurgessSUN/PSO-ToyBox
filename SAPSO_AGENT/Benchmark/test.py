@@ -12,7 +12,9 @@ from SAPSO_AGENT.SAPSO.Graphics.graphing import (
     plot_infeasible_particles,
     plot_average_velocity,
     plot_swarm_diversity,
-    plot_gbest_convergence
+    plot_gbest_convergence,
+    plot_final_gbest_per_function,
+    plot_gbest_convergence_per_function
 )
 
 from SAPSO_AGENT.Logs.logger import *
@@ -357,6 +359,8 @@ def test_agent(
             plot_average_velocity(evaluation_data, env_max_steps, str(plot_output_dir), plot_prefix)
             plot_swarm_diversity(evaluation_data, env_max_steps, str(plot_output_dir), plot_prefix)
             plot_gbest_convergence(evaluation_data, env_max_steps, str(plot_output_dir), plot_prefix)
+            plot_final_gbest_per_function(evaluation_data, env_max_steps, str(plot_output_dir), plot_prefix)
+            plot_gbest_convergence_per_function(evaluation_data, env_max_steps, str(plot_output_dir), plot_prefix)
             log_success(f"Evaluation plots saved in: {plot_output_dir}", module_name)
         except Exception as e:
             log_error(f"Error generating plots: {e}", module_name)

@@ -332,3 +332,158 @@ def plot_gbest_convergence(eval_data, max_steps, checkpoint_dir, checkpoint_pref
                          checkpoint_dir, f"{checkpoint_prefix}_eval_gbest_mean_std.png",
                          max_steps, use_log_scale=True, y_limit_bottom=None)
 
+
+def plot_final_gbest_per_function(eval_data, max_steps, checkpoint_dir, checkpoint_prefix, function_names=None):
+    """Plots final GBest values for each function as a bar chart."""
+    log_info("Extracting final GBest values for each function...", module_name)
+    
+    # Extract final GBest values for each function
+    final_gbests = []
+    function_labels = []
+    
+    if function_names is None:
+        # Generate default function names if not provided
+        function_names = [f"Function_{i+1}" for i in range(len(eval_data.get(0, [])))]
+    
+    # Get the last step with data
+    steps = sorted(eval_data.keys())
+    if not steps:
+        log_warning("No evaluation data found for final GBest plotting.", module_name)
+        return
+    
+    last_step = max(steps)
+    
+    # Extract final GBest values from the last step
+    if last_step in eval_data:
+        step_data = eval_data[last_step]
+        for i, run_data in enumerate(step_data):
+            if run_data is not None and len(run_data) > 7:  # gbest_val is at index 7
+                gbest_val = run_data[7]
+                if isinstance(gbest_val, (int, float)) and np.isfinite(gbest_val):
+                    final_gbests.append(gbest_val)
+                    func_name = function_names[i] if i < len(function_names) else f"Function_{i+1}"
+                    function_labels.append(func_name)
+    
+    if not final_gbests:
+        log_warning("No valid final GBest values found for plotting.", module_name)
+        return
+    
+    log_info(f"Plotting final GBest values for {len(final_gbests)} functions...", module_name)
+    
+    plt.figure(figsize=(12, 8))
+    
+    # Create bar chart
+    bars = plt.bar(range(len(final_gbests)), final_gbests, 
+                   color='skyblue', alpha=0.7, edgecolor='navy', linewidth=1)
+    
+    # Add value labels on bars
+    for i, (bar, value) in enumerate(zip(bars, final_gbests)):
+        plt.text(bar.get_x() + bar.get_width()/2, bar.get_height(),
+                f'{value:.2e}', ha='center', va='bottom', fontsize=8, rotation=45)
+    
+    plt.xlabel('Objective Functions')
+    plt.ylabel('Final Global Best Value')
+    plt.title(f'Final GBest Values per Function ({len(final_gbests)} functions)')
+    plt.xticks(range(len(function_labels)), function_labels, rotation=45, ha='right')
+    plt.grid(True, axis='y', alpha=0.3)
+    plt.tight_layout()
+    
+    # Use log scale if values vary significantly
+    if max(final_gbests) / min(final_gbests) > 100:
+        plt.yscale('log')
+        plt.ylabel('Final Global Best Value (log scale)')
+    
+    plot_filename = os.path.join(checkpoint_dir, f"{checkpoint_prefix}_final_gbest_per_function.png")
+    try:
+        plt.savefig(plot_filename, dpi=300, bbox_inches='tight')
+        log_success(f"Final GBest per function plot saved: {plot_filename}", module_name)
+    except Exception as e:
+        log_error(f"Could not save plot {plot_filename}: {e}", module_name)
+        log_error(traceback.format_exc(), module_name)
+    plt.close(plt.gcf())
+
+
+def plot_gbest_convergence_per_function(eval_data, max_steps, checkpoint_dir, checkpoint_prefix, function_names=None):
+    """Plots GBest convergence for each function individually."""
+    log_info("Plotting GBest convergence for each function individually...", module_name)
+    
+    if function_names is None:
+        # Generate default function names if not provided
+        function_names = [f"Function_{i+1}" for i in range(len(eval_data.get(0, [])))]
+    
+    # Get all steps with data
+    steps = sorted(eval_data.keys())
+    if not steps:
+        log_warning("No evaluation data found for GBest convergence plotting.", module_name)
+        return
+    
+    # Create subplots for each function
+    num_functions = len(function_names)
+    cols = min(3, num_functions)  # Max 3 columns
+    rows = (num_functions + cols - 1) // cols
+    
+    fig, axes = plt.subplots(rows, cols, figsize=(5*cols, 4*rows))
+    if num_functions == 1:
+        axes = [axes]
+    elif rows == 1:
+        axes = axes.reshape(1, -1)
+    else:
+        axes = axes.flatten()
+    
+    for func_idx in range(num_functions):
+        ax = axes[func_idx]
+        func_name = function_names[func_idx]
+        
+        # Extract GBest values for this function across all steps
+        gbest_values = []
+        valid_steps = []
+        
+        for step in steps:
+            if step < max_steps and step in eval_data:
+                step_data = eval_data[step]
+                if func_idx < len(step_data):
+                    run_data = step_data[func_idx]
+                    if run_data is not None and len(run_data) > 7:  # gbest_val is at index 7
+                        gbest_val = run_data[7]
+                        if isinstance(gbest_val, (int, float)) and np.isfinite(gbest_val):
+                            gbest_values.append(gbest_val)
+                            valid_steps.append(step)
+        
+        if gbest_values:
+            ax.plot(valid_steps, gbest_values, 'b-', linewidth=1.5, alpha=0.8)
+            ax.set_title(f'{func_name}', fontsize=10)
+            ax.set_xlabel('PSO Steps')
+            ax.set_ylabel('GBest Value')
+            ax.grid(True, alpha=0.3)
+            
+            # Use log scale if values vary significantly
+            if max(gbest_values) / min(gbest_values) > 100:
+                ax.set_yscale('log')
+            
+            # Add final value annotation
+            final_val = gbest_values[-1]
+            ax.annotate(f'{final_val:.2e}', 
+                       xy=(valid_steps[-1], final_val),
+                       xytext=(10, 10), textcoords='offset points',
+                       fontsize=8, ha='left', va='bottom',
+                       bbox=dict(boxstyle='round,pad=0.3', facecolor='yellow', alpha=0.7))
+        else:
+            ax.text(0.5, 0.5, 'No Data', ha='center', va='center', transform=ax.transAxes)
+            ax.set_title(f'{func_name}', fontsize=10)
+    
+    # Hide unused subplots
+    for i in range(num_functions, len(axes)):
+        axes[i].set_visible(False)
+    
+    plt.suptitle(f'GBest Convergence per Function ({num_functions} functions)', fontsize=14)
+    plt.tight_layout()
+    
+    plot_filename = os.path.join(checkpoint_dir, f"{checkpoint_prefix}_gbest_convergence_per_function.png")
+    try:
+        plt.savefig(plot_filename, dpi=300, bbox_inches='tight')
+        log_success(f"GBest convergence per function plot saved: {plot_filename}", module_name)
+    except Exception as e:
+        log_error(f"Could not save plot {plot_filename}: {e}", module_name)
+        log_error(traceback.format_exc(), module_name)
+    plt.close(plt.gcf())
+
