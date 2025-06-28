@@ -20,6 +20,20 @@ SAVE_FREQ_MULTIPLIER = 4  # Renamed from SAVE_FREQ for clarity with train.py arg
 # --- Testing Config ---
 NUM_EVAL_RUNS = 30  # Number of deterministic runs per test function
 
+# --- RL Model Save/Load Config ---
+# Control whether to save, load, or use new RL models
+SAVE_RL_MODEL = False          # Whether to save the trained RL model
+LOAD_RL_MODEL = False         # Whether to load an existing RL model for training
+USE_NEW_MODEL = True          # Whether to use a fresh model (ignored if LOAD_RL_MODEL is True)
+MODEL_SAVE_FREQUENCY = 5      # Save model every N functions (if SAVE_RL_MODEL is True)
+AUTO_SAVE_FINAL = True        # Always save final model after training (if SAVE_RL_MODEL is True)
+
+# Model file naming and organization
+MODEL_NAME_PREFIX = "sapso_agent"  # Prefix for saved model files
+MODEL_VERSION_SUFFIX = ""          # Optional version suffix (e.g., "_v1", "_experiment1")
+INCLUDE_TIMESTAMP = True           # Include timestamp in model filename
+MODEL_METADATA_SAVE = True         # Save training metadata with model
+
 # --- Agent Hyperparameters (can also be passed if needed) ---
 # hidden_dim=256; gamma=1.0; tau=0.005; alpha=0.2; actor_lr=3e-4; critic_lr=3e-4
 # For simplicity, keeping these inside train/test for now, but could be passed

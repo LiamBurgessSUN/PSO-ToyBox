@@ -17,17 +17,18 @@ from SAPSO_AGENT.SAPSO.Graphics.graphing import (
 
 from SAPSO_AGENT.Logs.logger import *
 from SAPSO_AGENT.SAPSO.PSO.ObjectiveFunctions.Testing.Loader import test_objective_function_classes
+from SAPSO_AGENT.CONFIG import *
 
 # --- Main Testing Function (Accepts Arguments) ---
 def test_agent(
-        env_dim=30,
-        env_particles=30,
-        env_max_steps=5000,
-        agent_step_size=125,
-        adaptive_nt_mode=False,
-        nt_range=(1, 50),
-        num_eval_runs=30,
-        checkpoint_base_dir=None,
+        env_dim=ENV_DIM,
+        env_particles=ENV_PARTICLES,
+        env_max_steps=ENV_MAX_STEPS,
+        agent_step_size=AGENT_STEP_SIZE,
+        adaptive_nt_mode=ADAPTIVE_NT_MODE,
+        nt_range=NT_RANGE,
+        num_eval_runs=NUM_EVAL_RUNS,
+        checkpoint_base_dir=CHECKPOINT_BASE_DIR,
         hidden_dim=256,
         gamma=1.0,
         tau=0.005,
@@ -35,7 +36,7 @@ def test_agent(
         actor_lr=3e-4,
         critic_lr=3e-4,
         v_clamp_ratio=0.2,
-        use_velocity_clamping=True,
+        use_velocity_clamping=USE_VELOCITY_CLAMPING,
         convergence_patience=50,
         convergence_threshold_gbest=1e-8,
         convergence_threshold_pbest_std=1e-6,
@@ -48,6 +49,13 @@ def test_agent(
         log_error("The test_objective_function_classes list is empty. Cannot test.", module_name)
         return
 
+    # --- Model Configuration ---
+    log_header("--- Model Configuration ---", module_name)
+    log_info(f"Load RL Model: {LOAD_RL_MODEL}", module_name)
+    log_info(f"Use New Model: {USE_NEW_MODEL}", module_name)
+    log_info(f"Model Name Prefix: {MODEL_NAME_PREFIX}", module_name)
+    log_info(f"Model Version Suffix: {MODEL_VERSION_SUFFIX}", module_name)
+
     # --- Determine Model File Path ---
     if checkpoint_base_dir is None:
         script_dir = Path(__file__).parent
@@ -57,14 +65,26 @@ def test_agent(
 
     mode_suffix = "adaptive_nt" if adaptive_nt_mode else f"fixed_nt{agent_step_size}"
     checkpoint_dir = Path(checkpoint_base_dir) / f"checkpoints_sapso_vectorized_{mode_suffix}"
-    checkpoint_prefix = f"sac_psoenv_vectorized_{mode_suffix}"
-    MODEL_TO_LOAD = checkpoint_dir / f"{checkpoint_prefix}_final.pth"
+    
+    # Generate model filename based on CONFIG settings
+    version_suffix = MODEL_VERSION_SUFFIX if MODEL_VERSION_SUFFIX else ""
+    model_filename = f"{MODEL_NAME_PREFIX}_{mode_suffix}{version_suffix}"
+    MODEL_TO_LOAD = checkpoint_dir / f"{model_filename}_final.pth"
 
     log_info(f"Attempting to load model: {MODEL_TO_LOAD}", module_name)
-    if not MODEL_TO_LOAD.exists():
-        log_error(f"Model file not found at {MODEL_TO_LOAD}", module_name)
-        log_error("Ensure training ran with the same config and checkpoint base dir is correct.", module_name)
-        return
+    
+    # Check if model loading is required
+    if LOAD_RL_MODEL:
+        if not MODEL_TO_LOAD.exists():
+            log_error(f"Model file not found at {MODEL_TO_LOAD}", module_name)
+            log_error("Ensure training ran with the same config and checkpoint base dir is correct.", module_name)
+            if not USE_NEW_MODEL:
+                log_error("Cannot continue without loading model. Exiting.", module_name)
+                return
+            else:
+                log_warning("USE_NEW_MODEL is True. Continuing with new model.", module_name)
+    elif not USE_NEW_MODEL:
+        log_warning("USE_NEW_MODEL is False but LOAD_RL_MODEL is False. Using new model.", module_name)
 
     # --- Initialize Environment (Placeholder) ---
     log_info("Creating temporary vectorized environment to get dimensions...", module_name)
@@ -83,8 +103,8 @@ def test_agent(
             convergence_threshold_gbest=convergence_threshold_gbest,
             convergence_threshold_pbest_std=convergence_threshold_pbest_std,
         )
-        state_dim = temp_env.observation_space.shape[0]
-        action_dim = temp_env.action_space.shape[0]
+        state_dim = temp_env.observation_space.shape[0] if temp_env.observation_space.shape else 0
+        action_dim = temp_env.action_space.shape[0] if temp_env.action_space.shape else 0
         temp_env.close()
         log_info("Temporary environment closed.", module_name)
     except Exception as e:
@@ -121,13 +141,27 @@ def test_agent(
     )
 
     # --- Load the Trained Agent Model ---
-    try:
-        agent.load(str(MODEL_TO_LOAD))
-        log_success(f"Successfully loaded trained agent from: {MODEL_TO_LOAD}", module_name)
-    except Exception as e:
-        log_error(f"Error loading agent model: {e}", module_name)
-        log_error(traceback.format_exc(), module_name)
-        return
+    if LOAD_RL_MODEL and MODEL_TO_LOAD.exists():
+        try:
+            agent.load(str(MODEL_TO_LOAD))
+            log_success(f"Successfully loaded trained agent from: {MODEL_TO_LOAD}", module_name)
+        except Exception as e:
+            log_error(f"Error loading agent model: {e}", module_name)
+            log_error(traceback.format_exc(), module_name)
+            if not USE_NEW_MODEL:
+                log_error("Cannot continue without loading model. Exiting.", module_name)
+                return
+            else:
+                log_warning("USE_NEW_MODEL is True. Continuing with new model.", module_name)
+    elif LOAD_RL_MODEL and not MODEL_TO_LOAD.exists():
+        log_warning(f"Model file not found: {MODEL_TO_LOAD}", module_name)
+        if not USE_NEW_MODEL:
+            log_error("Cannot continue without loading model. Exiting.", module_name)
+            return
+        else:
+            log_warning("USE_NEW_MODEL is True. Continuing with new model.", module_name)
+    else:
+        log_info("Using new untrained model for testing.", module_name)
 
     log_header(f"Starting {num_eval_runs} deterministic evaluation runs per test function...", module_name)
 
@@ -146,7 +180,7 @@ def test_agent(
 
         for run in range(num_eval_runs):
             log_debug(f"  Starting Evaluation Run {run + 1}/{num_eval_runs} for {func_name}...", module_name)
-            run_best_gbest = np.inf
+            run_best_gbest = float('inf')
 
             try:
                 current_dim = env_dim
@@ -167,7 +201,7 @@ def test_agent(
                 # TODO eval seed effects
                 # state, _ = eval_env.reset(seed=1000 + func_index * num_eval_runs + run)
                 state, _ = eval_env.reset()
-                run_best_gbest = eval_env.pso.gbest_value
+                run_best_gbest = float(eval_env.pso.gbest_value) if eval_env and hasattr(eval_env, 'pso') else float('inf')
             except Exception as e:
                 log_error(f"  Error creating environment for run {run + 1} on {func_name}: {e}", module_name)
                 log_error(traceback.format_exc(), module_name)
@@ -189,8 +223,8 @@ def test_agent(
                 try:
                     next_state, reward, term, trunc, info = eval_env.step(action)
                     turn_final_gbest = info.get('final_gbest', np.inf)
-                    if np.isfinite(turn_final_gbest):
-                        run_best_gbest = min(run_best_gbest, turn_final_gbest)
+                    if np.isfinite(turn_final_gbest) and isinstance(turn_final_gbest, (int, float)):
+                        run_best_gbest = min(run_best_gbest, float(turn_final_gbest))
                 except Exception as e:
                     log_error(f"  Error during env.step() in run {run + 1} on {func_name}: {e}", module_name)
                     log_error(traceback.format_exc(), module_name)
@@ -314,7 +348,7 @@ def test_agent(
         log_info("Generating evaluation plots for test functions...", module_name)
         plot_output_dir = checkpoint_dir / "test_plots_vectorized"
         os.makedirs(plot_output_dir, exist_ok=True)
-        plot_prefix = f"{checkpoint_prefix}_TESTING_VECTORIZED"
+        plot_prefix = f"{model_filename}_TESTING_VECTORIZED"
 
         try:
             plot_evaluation_parameters(evaluation_data, env_max_steps, str(plot_output_dir), plot_prefix)

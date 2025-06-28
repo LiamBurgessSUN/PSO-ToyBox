@@ -12,21 +12,22 @@ from SAPSO_AGENT.SAPSO.Environment.Environment import Environment
 
 from SAPSO_AGENT.SAPSO.PSO.ObjectiveFunctions.Training.Loader import objective_function_classes
 from SAPSO_AGENT.Logs.logger import *
+from SAPSO_AGENT.CONFIG import *
 
 # --- Main Training Function (Accepts Arguments) ---
 def train_agent(
-        env_dim=30,
-        env_particles=30,  # Keep this parameter
-        env_max_steps=5000,
-        agent_step_size=125,
-        adaptive_nt_mode=False,
-        nt_range=(1, 50),
-        episodes_per_function=5,
-        batch_size=256,
-        start_steps=1000,
-        updates_per_step=1,
-        save_freq_multiplier=4,
-        checkpoint_base_dir=None,
+        env_dim=ENV_DIM,
+        env_particles=ENV_PARTICLES,  # Keep this parameter
+        env_max_steps=ENV_MAX_STEPS,
+        agent_step_size=AGENT_STEP_SIZE,
+        adaptive_nt_mode=ADAPTIVE_NT_MODE,
+        nt_range=NT_RANGE,
+        episodes_per_function=EPISODES_PER_FUNCTION,
+        batch_size=BATCH_SIZE,
+        start_steps=START_STEPS,
+        updates_per_step=UPDATES_PER_STEP,
+        save_freq_multiplier=SAVE_FREQ_MULTIPLIER,
+        checkpoint_base_dir=CHECKPOINT_BASE_DIR,
         # Agent HPs
         hidden_dim=256,
         gamma=1.0,
@@ -36,7 +37,7 @@ def train_agent(
         critic_lr=3e-4,
         # Add PSO/Env params if needed by PSOEnvVectorized constructor
         v_clamp_ratio=0.2,
-        use_velocity_clamping=True,
+        use_velocity_clamping=USE_VELOCITY_CLAMPING,
         convergence_patience=50,
         convergence_threshold_gbest=1e-8,
         convergence_threshold_pbest_std=1e-6,
@@ -71,8 +72,8 @@ def train_agent(
             convergence_threshold_pbest_std=convergence_threshold_pbest_std,
             # stability_threshold=stability_threshold
         )
-        state_dim = temp_env.observation_space.shape[0]
-        action_dim = temp_env.action_space.shape[0]
+        state_dim = temp_env.observation_space.shape[0] if temp_env.observation_space.shape else 0
+        action_dim = temp_env.action_space.shape[0] if temp_env.action_space.shape else 0
         temp_env.close()
         log_info("Temporary environment closed.", module_name)
     except Exception as e:
@@ -85,7 +86,7 @@ def train_agent(
     log_header(f"--- Training Configuration (Vectorized Env) ---", module_name)
     log_info(f"Using device: {device}", module_name)
     log_info(f"Objective Functions: {len(objective_function_classes)}", module_name)
-    log_info(f"Env Dim: {env_dim}, Particles: {env_particles}, Max PSO Steps: {env_max_steps}", module_name)
+    log_info(f"Env Dim: {env_dim}, Particles: {env_particles}, Max Steps: {env_max_steps}", module_name)
     log_info(f"Adaptive Nt Mode: {adaptive_nt_mode}", module_name)
     if not adaptive_nt_mode:
         log_info(f"Fixed Agent Step Size (Nt): {agent_step_size}", module_name)
@@ -111,6 +112,59 @@ def train_agent(
         adaptive_nt=adaptive_nt_mode
     )
 
+    # --- Model Load/Save Configuration ---
+    log_header("--- Model Configuration ---", module_name)
+    log_info(f"Save RL Model: {SAVE_RL_MODEL}", module_name)
+    log_info(f"Load RL Model: {LOAD_RL_MODEL}", module_name)
+    log_info(f"Use New Model: {USE_NEW_MODEL}", module_name)
+    log_info(f"Model Save Frequency: {MODEL_SAVE_FREQUENCY}", module_name)
+    log_info(f"Auto Save Final: {AUTO_SAVE_FINAL}", module_name)
+
+    # --- Checkpoint Setup ---
+    if checkpoint_base_dir is None:
+        script_dir = Path(__file__).parent
+        # Adjust path relative to benchmark.py if needed
+        project_root_fallback = script_dir.parents[1]  # Assuming Benchmark is one level down
+        checkpoint_base_dir = project_root_fallback / "SAPSO" / "checkpoints"  # Example adjusted path
+        log_warning(f"checkpoint_base_dir not provided, using default: {checkpoint_base_dir}", module_name)
+
+    # Generate model filename based on CONFIG settings
+    mode_suffix = "adaptive_nt" if adaptive_nt_mode else f"fixed_nt{agent_step_size}"
+    timestamp_suffix = f"_{int(time.time())}" if INCLUDE_TIMESTAMP else ""
+    version_suffix = MODEL_VERSION_SUFFIX if MODEL_VERSION_SUFFIX else ""
+    
+    model_filename = f"{MODEL_NAME_PREFIX}_{mode_suffix}{version_suffix}{timestamp_suffix}"
+    checkpoint_dir = Path(checkpoint_base_dir) / f"checkpoints_sapso_vectorized_{mode_suffix}"
+    checkpoint_file = checkpoint_dir / f"{model_filename}_checkpoint.pth"
+    final_model_file = checkpoint_dir / f"{model_filename}_final.pth"
+    
+    os.makedirs(checkpoint_dir, exist_ok=True)
+    log_info(f"Checkpoints will be saved in: {checkpoint_dir}", module_name)
+    log_info(f"Model filename: {model_filename}", module_name)
+
+    # --- Load Existing Model if Configured ---
+    if LOAD_RL_MODEL:
+        # Try to find and load the most recent model
+        model_files = list(checkpoint_dir.glob(f"{MODEL_NAME_PREFIX}_{mode_suffix}*_final.pth"))
+        if model_files:
+            # Sort by modification time and get the most recent
+            latest_model = max(model_files, key=lambda x: x.stat().st_mtime)
+            try:
+                agent.load(str(latest_model))
+                log_success(f"Loaded existing model from: {latest_model}", module_name)
+            except Exception as e:
+                log_error(f"Failed to load existing model: {e}", module_name)
+                if not USE_NEW_MODEL:
+                    log_error("Cannot continue without loading model. Exiting.", module_name)
+                    return
+        else:
+            log_warning(f"No existing model found in {checkpoint_dir}", module_name)
+            if not USE_NEW_MODEL:
+                log_error("Cannot continue without loading model. Exiting.", module_name)
+                return
+    elif not USE_NEW_MODEL:
+        log_warning("USE_NEW_MODEL is False but LOAD_RL_MODEL is False. Using new model.", module_name)
+
     # --- Initialize Replay Buffer ---
     buffer_capacity = 1_000_000
     buffer = ReplayBuffer(
@@ -126,30 +180,13 @@ def train_agent(
     total_agent_steps = 0
     total_episodes_run = 0
 
-    # --- Checkpoint Setup ---
-    if checkpoint_base_dir is None:
-        script_dir = Path(__file__).parent
-        # Adjust path relative to benchmark.py if needed
-        project_root_fallback = script_dir.parents[1]  # Assuming Benchmark is one level down
-        checkpoint_base_dir = project_root_fallback / "SAPSO" / "checkpoints"  # Example adjusted path
-        log_warning(f"checkpoint_base_dir not provided, using default: {checkpoint_base_dir}", module_name)
-
-    # Adjusted checkpoint naming convention slightly
-    mode_suffix = "adaptive_nt" if adaptive_nt_mode else f"fixed_nt{agent_step_size}"
-    checkpoint_dir = Path(checkpoint_base_dir) / f"checkpoints_sapso_vectorized_{mode_suffix}"
-    checkpoint_prefix = f"sac_psoenv_vectorized_{mode_suffix}"  # Prefix used for files
-    checkpoint_file = checkpoint_dir / f"{checkpoint_prefix}_checkpoint.pth"
-    final_model_file = checkpoint_dir / f"{checkpoint_prefix}_final.pth"
-    os.makedirs(checkpoint_dir, exist_ok=True)
-    log_info(f"Checkpoints will be saved in: {checkpoint_dir}", module_name)
-
     # --- Main Training Loop (Nested) ---
     log_header("Starting training...", module_name)
     train_start_time = time.time()
 
     # Outer loop: Iterate through each objective function
     random.shuffle(objective_function_classes)
-    for func_index, selected_func_class in enumerate(objective_function_classes[:5]):
+    for func_index, selected_func_class in enumerate(objective_function_classes[:1]):
         func_name = selected_func_class.__name__
         log_header(f"===== Training on Function {func_index + 1}/{len(objective_function_classes)}: {func_name} =====",
                    module_name)
@@ -203,7 +240,7 @@ def train_agent(
             terminated, truncated = False, False
             episode_agent_steps = 0
             # Track the best gbest found *during* this episode
-            episode_best_gbest = train_env.pso.gbest_value if train_env and hasattr(train_env, 'pso') else np.inf
+            episode_best_gbest = float(train_env.pso.gbest_value) if train_env and hasattr(train_env, 'pso') else float('inf')
 
             # --- Innermost Loop (Agent Steps within Episode) ---
             while not terminated and not truncated:
@@ -221,8 +258,8 @@ def train_agent(
                     next_state, reward, terminated, truncated, info = train_env.step(action)
                     # Update episode's best gbest using the final gbest from the agent turn
                     turn_final_gbest = info.get('final_gbest', np.inf)
-                    if np.isfinite(turn_final_gbest):
-                        episode_best_gbest = min(episode_best_gbest, turn_final_gbest)
+                    if np.isfinite(turn_final_gbest) and isinstance(turn_final_gbest, (int, float)):
+                        episode_best_gbest = min(episode_best_gbest, float(turn_final_gbest))
 
                 except Exception as e:
                     log_error(
@@ -307,9 +344,8 @@ def train_agent(
         else:
             log_warning(f"  No results logged for this function.", module_name)
 
-        # --- Periodic Checkpoint Saving (Based on Functions Completed) ---
-        # Save checkpoint every 'save_freq_multiplier' *functions*
-        if (func_index + 1) % save_freq_multiplier == 0:
+        # --- Conditional Checkpoint Saving ---
+        if SAVE_RL_MODEL and (func_index + 1) % MODEL_SAVE_FREQUENCY == 0:
             try:
                 agent.save(str(checkpoint_file))
                 log_success(f"Checkpoint saved after function {func_index + 1} ({func_name}) to {checkpoint_file}",
@@ -382,12 +418,15 @@ def train_agent(
         log_warning("No final global best data collected for normalization.", module_name)
     log_info("---------------------------------", module_name)
 
-    # --- Save Final Model ---
-    try:
-        agent.save(str(final_model_file))
-        log_success(f"Final trained model saved to {final_model_file}", module_name)
-    except Exception as e:
-        log_warning(f"Could not save final checkpoint: {e}", module_name)
+    # --- Conditional Final Model Save ---
+    if SAVE_RL_MODEL and AUTO_SAVE_FINAL:
+        try:
+            agent.save(str(final_model_file))
+            log_success(f"Final trained model saved to {final_model_file}", module_name)
+        except Exception as e:
+            log_warning(f"Could not save final checkpoint: {e}", module_name)
+    elif not SAVE_RL_MODEL:
+        log_info("Model saving disabled. Final model not saved.", module_name)
 
     # --- Plot Training Reward Curve (Average across functions per 'epoch') ---
     avg_rewards_per_func = {}
@@ -413,7 +452,7 @@ def train_agent(
             plt.xticks(rotation=90)
             plt.grid(axis='y')
             plt.tight_layout()
-            plot_filename = checkpoint_dir / f"{checkpoint_prefix}_train_rewards_per_func_static.png"
+            plot_filename = checkpoint_dir / f"{model_filename}_train_rewards_per_func_static.png"
             try:
                 plt.savefig(str(plot_filename))
                 log_success(f"Training reward plot (per function) saved to {plot_filename}", module_name)

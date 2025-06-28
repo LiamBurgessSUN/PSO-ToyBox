@@ -131,6 +131,33 @@
             },
             "justMyCode": true,
             "description": "Test the metrics calculation system"
+        },
+        {
+            "name": "Run Benchmark with Resource Monitor",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/launch_benchmark_with_monitor.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "justMyCode": true,
+            "description": "Run benchmark with background resource monitoring"
+        },
+        {
+            "name": "Resource Monitor Only",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/launch_benchmark_with_monitor.py",
+            "args": ["--monitor-only"],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "justMyCode": true,
+            "description": "Start resource monitoring without running benchmark"
         }
     ]
 } 
