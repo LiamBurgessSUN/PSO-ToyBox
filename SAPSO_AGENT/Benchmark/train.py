@@ -186,7 +186,7 @@ def train_agent(
 
     # Outer loop: Iterate through each objective function
     random.shuffle(objective_function_classes)
-    for func_index, selected_func_class in enumerate(objective_function_classes[:1]):
+    for func_index, selected_func_class in enumerate(objective_function_classes[:5]):
         func_name = selected_func_class.__name__
         log_header(f"===== Training on Function {func_index + 1}/{len(objective_function_classes)}: {func_name} =====",
                    module_name)

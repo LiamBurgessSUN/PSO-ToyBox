@@ -158,6 +158,61 @@
             },
             "justMyCode": true,
             "description": "Start resource monitoring without running benchmark"
+        },
+        {
+            "name": "Baseline PSO - Training Functions",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/Baseline/run_baseline.py",
+            "args": [
+                "--mode", "training",
+                "--strategy", "paper_time_varying",
+                "--env-dim", "30",
+                "--particles", "30",
+                "--max-steps", "1000",
+                "--episodes-per-function", "5",
+                "--checkpoint-dir", "${workspaceFolder}/Baseline/plots",
+                "--plot-parameter-evolution",
+                "--plot-parameter-comparison",
+                "--plot-average-parameters",
+                "--plot-stability",
+                "--plot-infeasible",
+                "--plot-velocity",
+                "--plot_swarm_diversity"
+            ],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
+        },
+        {
+            "name": "Baseline PSO - Testing Functions",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/Baseline/run_baseline.py",
+            "args": [
+                "--mode", "testing",
+                "--strategy", "paper_time_varying",
+                "--env-dim", "30",
+                "--particles", "30",
+                "--max-steps", "5000",
+                "--eval-runs", "10",
+                "--checkpoint-dir", "${workspaceFolder}/Baseline/plots",
+                "--plot-parameter-evolution",
+                "--plot-parameter-comparison",
+                "--plot-average-parameters",
+                "--plot-stability",
+                "--plot-infeasible",
+                "--plot-velocity",
+                "--plot_swarm_diversity",
+                "--clip_swarm_diversity"
+            ],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
         }
     ]
 } 

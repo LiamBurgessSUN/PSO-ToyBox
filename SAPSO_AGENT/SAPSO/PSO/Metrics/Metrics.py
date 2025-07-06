@@ -37,7 +37,8 @@ class SwarmMetrics:
         stability_boundary = 24.0 * (1.0 - omega ** 2) / denominator
         return (c1 + c2) < stability_boundary
 
-    def compute(self, positions: np.ndarray,
+    def compute(self, 
+                positions: np.ndarray,
                 previous_positions: np.ndarray,
                 velocities: np.ndarray,
                 bounds: tuple,

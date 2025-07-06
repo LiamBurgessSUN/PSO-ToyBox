@@ -360,7 +360,11 @@ def test_agent(
             plot_swarm_diversity(evaluation_data, env_max_steps, str(plot_output_dir), plot_prefix)
             plot_gbest_convergence(evaluation_data, env_max_steps, str(plot_output_dir), plot_prefix)
             plot_final_gbest_per_function(evaluation_data, env_max_steps, str(plot_output_dir), plot_prefix)
-            plot_gbest_convergence_per_function(evaluation_data, env_max_steps, str(plot_output_dir), plot_prefix)
+            
+            # Create function names list for plotting
+            function_names = [func_class.__name__ for func_class in test_objective_function_classes]
+            plot_gbest_convergence_per_function(evaluation_data, env_max_steps, str(plot_output_dir), plot_prefix, function_names)
+            
             log_success(f"Evaluation plots saved in: {plot_output_dir}", module_name)
         except Exception as e:
             log_error(f"Error generating plots: {e}", module_name)

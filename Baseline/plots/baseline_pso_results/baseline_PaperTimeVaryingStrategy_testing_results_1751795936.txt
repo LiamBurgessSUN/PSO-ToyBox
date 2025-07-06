@@ -1,0 +1,62 @@
+Baseline PSO Testing Results
+Parameter Strategy: PaperTimeVaryingStrategy({})
+Strategy Parameters: {}
+Environment: dim=30, particles=30, max_steps=1000
+================================================================================
+
+Function: CrossLegTableFunction
+----------------------------------------
+  Mean GBest: 4.540839e-05
+  Std GBest: 4.898393e-09
+  Min GBest: 4.540273e-05
+  Max GBest: 4.541979e-05
+  Successful runs: 10/10
+
+Function: Lanczos3Function
+----------------------------------------
+  Mean GBest: -7.338558e-02
+  Std GBest: 6.328792e-02
+  Min GBest: -1.471087e-01
+  Max GBest: -4.087628e-05
+  Successful runs: 10/10
+
+Function: MichalewiczFunction
+----------------------------------------
+  Mean GBest: -2.288504e+01
+  Std GBest: 1.162461e+00
+  Min GBest: -2.469829e+01
+  Max GBest: -2.116260e+01
+  Successful runs: 10/10
+
+Function: Schaffer4Function
+----------------------------------------
+  Mean GBest: 1.395417e+01
+  Std GBest: 9.895310e-02
+  Min GBest: 1.379730e+01
+  Max GBest: 1.411188e+01
+  Successful runs: 10/10
+
+Function: SineEnvelopeFunction
+----------------------------------------
+  Mean GBest: 1.118117e+01
+  Std GBest: 1.084407e+00
+  Min GBest: 9.122453e+00
+  Max GBest: 1.297701e+01
+  Successful runs: 10/10
+
+Function: StretchedVSineWaveFunction
+----------------------------------------
+  Mean GBest: 7.358220e+00
+  Std GBest: 1.092704e+00
+  Min GBest: 5.922183e+00
+  Max GBest: 9.342225e+00
+  Successful runs: 10/10
+
+Function: WavyFunction
+----------------------------------------
+  Mean GBest: 3.350314e-01
+  Std GBest: 7.652962e-02
+  Min GBest: 2.404598e-01
+  Max GBest: 4.789717e-01
+  Successful runs: 10/10
+
