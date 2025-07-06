@@ -5,6 +5,7 @@
 import time
 from pathlib import Path
 import traceback  # Import traceback for logging errors
+from typing import Dict, Any, Optional, Tuple
 
 # --- Import Logger ---
 # Using the specified import path
@@ -42,6 +43,9 @@ if __name__ == "__main__":
     log_info("-----------------------------", module_name)
 
     train_success = False
+    trained_agent = None
+    training_results = None
+    
     # Step 1: Run the training function, passing hyperparameters
     log_header("Step 1: Training the agent...", module_name)
     start_time_train = time.time()
@@ -49,7 +53,7 @@ if __name__ == "__main__":
         # Call train_agent, assuming it now uses the logger internally
         # If train_agent raises exceptions on failure, this try/except block will catch them.
         # If train_agent uses sys.exit(), the SystemExit exception will be caught.
-        train_agent(
+        trained_agent, training_results = train_agent(
             env_dim=ENV_DIM,
             env_particles=ENV_PARTICLES,
             env_max_steps=ENV_MAX_STEPS,
@@ -66,7 +70,36 @@ if __name__ == "__main__":
             # Pass other agent hyperparams if needed
         )
         train_success = True  # Assume success if no exception is raised
-        log_success("Training function completed.", module_name)
+        log_success("Training function completed successfully.", module_name)
+        
+        # Log training summary if results are available
+        if training_results:
+            log_info("--- Training Results Summary ---", module_name)
+            total_episodes = sum(len(results) for results in training_results.values())
+            log_info(f"Total episodes completed: {total_episodes}", module_name)
+            log_info(f"Functions trained: {list(training_results.keys())}", module_name)
+            
+            # Calculate overall training statistics
+            all_rewards = []
+            all_gbests = []
+            for func_name, results in training_results.items():
+                func_rewards = [r for r, g in results if isinstance(r, (int, float)) and not isinstance(r, bool)]
+                func_gbests = [g for r, g in results if isinstance(g, (int, float)) and not isinstance(g, bool)]
+                all_rewards.extend(func_rewards)
+                all_gbests.extend(func_gbests)
+                
+                if func_rewards:
+                    avg_reward = sum(func_rewards) / len(func_rewards)
+                    log_info(f"  {func_name}: {len(func_rewards)} episodes, avg reward: {avg_reward:.4f}", module_name)
+            
+            if all_rewards:
+                overall_avg_reward = sum(all_rewards) / len(all_rewards)
+                log_info(f"Overall average training reward: {overall_avg_reward:.4f}", module_name)
+            
+            if all_gbests:
+                best_gbest = min(all_gbests)
+                log_info(f"Best GBest achieved during training: {best_gbest:.6e}", module_name)
+        
     except SystemExit as e:
         log_warning(f"Training function exited with code {e.code}.", module_name)
         # Decide if exit code 0 should be treated as success
@@ -85,7 +118,7 @@ if __name__ == "__main__":
         start_time_test = time.time()
         try:
             # Call test_agent, assuming it now uses the logger internally
-            test_agent(
+            evaluation_data, eval_rewards, eval_gbests = test_agent(
                 env_dim=ENV_DIM,
                 env_particles=ENV_PARTICLES,
                 env_max_steps=ENV_MAX_STEPS,
@@ -98,6 +131,34 @@ if __name__ == "__main__":
                 # Pass other agent hyperparams if needed for init before load
             )
             log_success("Testing function completed successfully.", module_name)
+            
+            # Log testing summary if results are available
+            if eval_rewards and eval_gbests:
+                log_info("--- Testing Results Summary ---", module_name)
+                log_info(f"Total evaluation runs completed: {len(eval_rewards)}", module_name)
+                
+                if eval_rewards:
+                    avg_eval_reward = sum(eval_rewards) / len(eval_rewards)
+                    log_info(f"Average evaluation reward: {avg_eval_reward:.4f}", module_name)
+                
+                if eval_gbests:
+                    best_eval_gbest = min(eval_gbests)
+                    log_info(f"Best GBest achieved during evaluation: {best_eval_gbest:.6e}", module_name)
+                
+                # Compare training vs testing performance
+                if training_results and eval_rewards:
+                    all_train_rewards = []
+                    for results in training_results.values():
+                        all_train_rewards.extend([r for r, g in results if isinstance(r, (int, float)) and not isinstance(r, bool)])
+                    
+                    if all_train_rewards:
+                        avg_train_reward = sum(all_train_rewards) / len(all_train_rewards)
+                        avg_eval_reward = sum(eval_rewards) / len(eval_rewards)
+                        log_info(f"Training vs Testing Performance:", module_name)
+                        log_info(f"  Training avg reward: {avg_train_reward:.4f}", module_name)
+                        log_info(f"  Testing avg reward: {avg_eval_reward:.4f}", module_name)
+                        log_info(f"  Performance difference: {avg_eval_reward - avg_train_reward:.4f}", module_name)
+            
         except SystemExit as e:
             log_warning(f"Testing function exited with code {e.code}.", module_name)
         except Exception as e:
@@ -113,6 +174,14 @@ if __name__ == "__main__":
         # Log why testing is skipped
         log_warning("Training did not complete successfully or was skipped. Skipping testing.", module_name)
 
+    # Final summary
     log_header("========================================", module_name)
     log_header("SAPSO Benchmark Process Finished", module_name)
     log_header("========================================", module_name)
+    
+    if train_success:
+        log_success("Benchmark completed successfully with both training and testing phases.", module_name)
+    else:
+        log_warning("Benchmark completed with training failures. Check logs for details.", module_name)
+    
+    log_info("========================================", module_name)

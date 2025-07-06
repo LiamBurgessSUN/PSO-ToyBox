@@ -2,8 +2,11 @@ import torch
 import numpy as np
 import time
 import collections
+import os
 import traceback  # For logging exceptions
 from pathlib import Path
+from typing import Dict, Any, Optional, Tuple
+
 from SAPSO_AGENT.SAPSO.RL.ActorCritic.Agent import SACAgent
 from SAPSO_AGENT.SAPSO.Environment.Environment import Environment
 from SAPSO_AGENT.SAPSO.Graphics.graphing import (
@@ -172,6 +175,7 @@ def test_agent(
     all_eval_rewards = []
     final_gbests_all_runs = []
     eval_start_time = time.time()
+    current_run_id = 0  # Track run ID for metrics
 
     # --- Evaluation Loop ---
     for func_index, func_class in enumerate(test_objective_function_classes):
@@ -181,7 +185,8 @@ def test_agent(
         last_gbest_this_func = []
 
         for run in range(num_eval_runs):
-            log_debug(f"  Starting Evaluation Run {run + 1}/{num_eval_runs} for {func_name}...", module_name)
+            current_run_id += 1  # Increment run ID for each evaluation run
+            log_debug(f"  Starting Evaluation Run {run + 1}/{num_eval_runs} for {func_name} (Run ID: {current_run_id})...", module_name)
             run_best_gbest = float('inf')
 
             try:
@@ -223,6 +228,8 @@ def test_agent(
                 params_for_turn = [float(eval_omega), float(eval_c1), float(eval_c2)]
 
                 try:
+                    # The Environment now automatically passes the function name and run ID to the PSO
+                    # The metrics tracking is handled internally by the Environment and PSOSwarm
                     next_state, reward, term, trunc, info = eval_env.step(action)
                     turn_final_gbest = info.get('final_gbest', np.inf)
                     if np.isfinite(turn_final_gbest) and isinstance(turn_final_gbest, (int, float)):
@@ -372,3 +379,71 @@ def test_agent(
             log_warning("Plot generation failed. Ensure graphing.py is compatible.", module_name)
     else:
         log_warning("No evaluation data was collected, skipping plot generation.", module_name)
+
+    return evaluation_data, all_eval_rewards, final_gbests_all_runs
+
+if __name__ == "__main__":
+    import argparse
+    
+    parser = argparse.ArgumentParser(description="Test SAPSO agent with enhanced metrics tracking and plotting")
+    
+    # Environment parameters
+    parser.add_argument("--env-dim", type=int, default=ENV_DIM, help="Environment dimension")
+    parser.add_argument("--env-particles", type=int, default=ENV_PARTICLES, help="Number of particles")
+    parser.add_argument("--env-max-steps", type=int, default=ENV_MAX_STEPS, help="Maximum steps per episode")
+    parser.add_argument("--agent-step-size", type=int, default=AGENT_STEP_SIZE, help="Agent step size")
+    parser.add_argument("--adaptive-nt-mode", type=str, default=str(ADAPTIVE_NT_MODE), help="Adaptive NT mode (true/false)")
+    parser.add_argument("--nt-range", type=str, default=str(NT_RANGE), help="NT range as string '[min, max]'")
+    parser.add_argument("--num-eval-runs", type=int, default=NUM_EVAL_RUNS, help="Number of evaluation runs")
+    parser.add_argument("--checkpoint-base-dir", type=str, default=CHECKPOINT_BASE_DIR, help="Checkpoint base directory")
+    
+    # Agent hyperparameters
+    parser.add_argument("--hidden-dim", type=int, default=256, help="Hidden dimension")
+    parser.add_argument("--gamma", type=float, default=1.0, help="Gamma")
+    parser.add_argument("--tau", type=float, default=0.005, help="Tau")
+    parser.add_argument("--alpha", type=float, default=0.2, help="Alpha")
+    parser.add_argument("--actor-lr", type=float, default=3e-4, help="Actor learning rate")
+    parser.add_argument("--critic-lr", type=float, default=3e-4, help="Critic learning rate")
+    
+    # PSO parameters
+    parser.add_argument("--v-clamp-ratio", type=float, default=0.2, help="Velocity clamp ratio")
+    parser.add_argument("--use-velocity-clamping", type=str, default=str(USE_VELOCITY_CLAMPING), help="Use velocity clamping (true/false)")
+    parser.add_argument("--convergence-patience", type=int, default=50, help="Convergence patience")
+    parser.add_argument("--convergence-threshold-gbest", type=float, default=1e-8, help="Convergence threshold GBest")
+    parser.add_argument("--convergence-threshold-pbest-std", type=float, default=1e-6, help="Convergence threshold PBest std")
+    
+    args = parser.parse_args()
+    
+    # Parse string arguments
+    adaptive_nt_mode = args.adaptive_nt_mode.lower() == "true"
+    use_velocity_clamping = args.use_velocity_clamping.lower() == "true"
+    
+    # Parse NT range
+    try:
+        nt_range_str = args.nt_range.strip("[]").split(",")
+        nt_range = (int(nt_range_str[0]), int(nt_range_str[1]))
+    except:
+        nt_range = NT_RANGE
+    
+    # Run testing
+    test_agent(
+        env_dim=args.env_dim,
+        env_particles=args.env_particles,
+        env_max_steps=args.env_max_steps,
+        agent_step_size=args.agent_step_size,
+        adaptive_nt_mode=adaptive_nt_mode,
+        nt_range=nt_range,
+        num_eval_runs=args.num_eval_runs,
+        checkpoint_base_dir=args.checkpoint_base_dir,
+        hidden_dim=args.hidden_dim,
+        gamma=args.gamma,
+        tau=args.tau,
+        alpha=args.alpha,
+        actor_lr=args.actor_lr,
+        critic_lr=args.critic_lr,
+        v_clamp_ratio=args.v_clamp_ratio,
+        use_velocity_clamping=use_velocity_clamping,
+        convergence_patience=args.convergence_patience,
+        convergence_threshold_gbest=args.convergence_threshold_gbest,
+        convergence_threshold_pbest_std=args.convergence_threshold_pbest_std
+    )
