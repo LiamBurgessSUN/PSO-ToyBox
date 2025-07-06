@@ -12,7 +12,7 @@ from SAPSO_AGENT.Logs.logger import log_info, log_error, log_warning, log_succes
 
 # --- Project Imports ---
 # Use the updated PsoVectorized class ID if it changed
-from SAPSO_AGENT.SAPSO.PSO.PSO import PSOVectorized
+from SAPSO_AGENT.SAPSO.PSO.PSO import PSOSwarm
 from SAPSO_AGENT.SAPSO.PSO.ObjectiveFunctions.Training.Functions.Rastrgin import RastriginFunction
 
 module_name = Path(__file__).stem  # Gets 'PSO_Gym_Vectorized'
@@ -62,7 +62,7 @@ class Environment(gym.Env):
         # --- Initialize PSOVectorized ---
         try:
             self.strategy = GlobalBestStrategy(None)
-            self.pso = PSOVectorized(
+            self.pso = PSOSwarm(
                 objective_function=self.obj_fn,
                 num_particles=self.num_particles,
                 strategy=self.strategy,
@@ -132,7 +132,7 @@ class Environment(gym.Env):
 
         # Re-initialize PSOVectorized state
         try:
-            self.pso = PSOVectorized(  # Re-initialize PSO
+            self.pso = PSOSwarm(  # Re-initialize PSO
                 objective_function=self.obj_fn,
                 num_particles=self.num_particles,
                 strategy=self.strategy,

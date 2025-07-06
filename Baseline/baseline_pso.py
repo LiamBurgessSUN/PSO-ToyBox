@@ -18,7 +18,7 @@ from SAPSO_AGENT.Benchmark.train import train_agent as sapso_train_agent
 from SAPSO_AGENT.Benchmark.test import test_agent as sapso_test_agent
 
 # Import PSO components
-from SAPSO_AGENT.SAPSO.PSO.PSO import PSOVectorized
+from SAPSO_AGENT.SAPSO.PSO.PSO import PSOSwarm
 from SAPSO_AGENT.SAPSO.PSO.Cognitive.GBest import GlobalBestStrategy
 from SAPSO_AGENT.SAPSO.PSO.ObjectiveFunctions.Training.Loader import objective_function_classes
 from SAPSO_AGENT.SAPSO.PSO.ObjectiveFunctions.Testing.Loader import test_objective_function_classes
@@ -152,7 +152,7 @@ class BaselinePSO:
                 obj_func_instance = obj_func_class(dim=current_dim)
                 
                 # Initialize PSO
-                pso = PSOVectorized(
+                pso = PSOSwarm(
                     objective_function=obj_func_instance,
                     num_particles=self.env_particles,
                     strategy=None,  # Don't use strategy for baseline

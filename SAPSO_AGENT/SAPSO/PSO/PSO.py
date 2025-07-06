@@ -7,6 +7,7 @@ import numpy as np
 import collections
 import traceback  # For logging exceptions
 from pathlib import Path  # To get module name
+from typing import Dict, Any, Optional, Tuple
 
 from SAPSO_AGENT.Logs.logger import *
 from SAPSO_AGENT.SAPSO.PSO.Metrics.Metrics import SwarmMetrics
@@ -15,7 +16,7 @@ from SAPSO_AGENT.SAPSO.PSO.Metrics.Metrics import SwarmMetrics
 module_name = Path(__file__).stem  # Gets 'PsoVectorized'
 
 
-class PSOVectorized:
+class PSOSwarm:
     """
     A vectorized implementation of Particle Swarm Optimization using NumPy arrays.
     Modified to pass previous positions and control parameters for detailed metric calculation.
@@ -28,14 +29,14 @@ class PSOVectorized:
 
     def __init__(self,
                  objective_function,
-                 num_particles,
+                 num_particles: int,
                  strategy=None,
-                 v_clamp_ratio=0.2,
-                 use_velocity_clamping=True,
-                 convergence_patience=50,
-                 convergence_threshold_gbest=1e-8,
-                 convergence_threshold_pbest_std=1e-6,
-                 stability_threshold=1e-3  # Note: stability_threshold is now used within metrics class if needed
+                 v_clamp_ratio: float = 0.2,
+                 use_velocity_clamping: bool = True,
+                 convergence_patience: int = 50,
+                 convergence_threshold_gbest: float = 1e-8,
+                 convergence_threshold_pbest_std: float = 1e-6,
+                 stability_threshold: float = 1e-3  # Note: stability_threshold is now used within metrics class if needed
                  ):
         """
         Initializes the vectorized PSO algorithm.
@@ -48,7 +49,7 @@ class PSOVectorized:
 
         # --- Initialize Swarm State ---
         # Initialize positions safely within bounds
-        self.positions = np.random.uniform(low=self.bounds[0], high=self.bounds[1], size=(self.num_particles, self.dim))
+        self.positions: np.ndarray = np.random.uniform(low=self.bounds[0], high=self.bounds[1], size=(self.num_particles, self.dim))
         # Ensure initial positions are strictly within bounds if bounds are identical (e.g., for fixed dimension)
         if self.bounds[0] == self.bounds[1]:
             self.positions = np.full((self.num_particles, self.dim), self.bounds[0])
@@ -57,35 +58,36 @@ class PSOVectorized:
              pass # np.random.uniform is generally sufficient
 
 
-        self.velocities = np.zeros((self.num_particles, self.dim))
-        self.previous_positions = self.positions.copy()  # Initialize previous positions
+        self.velocities: np.ndarray = np.zeros((self.num_particles, self.dim))
+        self.previous_positions: np.ndarray = self.positions.copy()  # Initialize previous positions
 
         # Initialize personal bests - evaluate only initial valid positions
-        self.pbest_positions = self.positions.copy()
+        self.pbest_positions: np.ndarray = self.positions.copy()
+        self.pbest_values: np.ndarray  # Type annotation for pbest_values
         try:
             if hasattr(self.objective_function, 'evaluate_matrix') and callable(
                     self.objective_function.evaluate_matrix):
                 # Evaluate initial positions (which are guaranteed to be within bounds)
-                self.pbest_values = self.objective_function.evaluate_matrix(self.positions)
+                self.pbest_values = self.objective_function.evaluate_matrix(self.positions)  # type: ignore
                 log_debug("Initialized pbest using evaluate_matrix.", module_name)
             else:
                 log_debug("evaluate_matrix not found, initializing pbest using loop.", module_name)
-                self.pbest_values = np.array([self.objective_function.evaluate(p) for p in self.positions])
+                self.pbest_values = np.array([self.objective_function.evaluate(p) for p in self.positions])  # type: ignore
         except Exception as e:
             log_error(f"Error during initial pbest evaluation: {e}. Initializing pbest values to infinity.",
                       module_name)
             log_error(traceback.format_exc(), module_name)
-            self.pbest_values = np.full(self.num_particles, np.inf)
+            self.pbest_values = np.full(self.num_particles, np.inf, dtype=float)  # type: ignore
 
-        if not np.all(np.isfinite(self.pbest_values)):
+        if not np.all(np.isfinite(self.pbest_values)):  # type: ignore
             log_warning("Non-finite initial pbest values detected. Replacing with inf.", module_name)
-            self.pbest_values[~np.isfinite(self.pbest_values)] = np.inf
+            self.pbest_values[~np.isfinite(self.pbest_values)] = np.inf  # type: ignore
 
         # Initialize global best
         min_idx = np.argmin(self.pbest_values)
         if len(self.pbest_values) > 0 and np.isfinite(self.pbest_values[min_idx]):
-            self.gbest_position = self.pbest_positions[min_idx].copy()
-            self.gbest_value = self.pbest_values[min_idx]
+            self.gbest_position: np.ndarray = self.pbest_positions[min_idx].copy()
+            self.gbest_value: float = float(self.pbest_values[min_idx])
         else:
             # Fallback if no finite pbest values found initially
             self.gbest_position = self.positions[0].copy() if self.num_particles > 0 else np.zeros(self.dim)
@@ -125,7 +127,9 @@ class PSOVectorized:
         log_info(f"Initialized Vectorized PSO: {num_particles} particles, {self.dim} dimensions.", module_name)
         log_info(f"Initial GBest Value: {self.gbest_value:.4e}", module_name)
 
-    def optimize_step(self, omega, c1, c2):
+    def optimize_step(self, omega: float, c1: float, c2: float, 
+                     step: int = 0, function_name: Optional[str] = None, 
+                     run_id: int = 0) -> Tuple[Dict[str, Any], float, bool]:
         """
         Performs one step of the PSO optimization. Handles boundary constraints by
         assigning infinite fitness to particles outside the bounds, as per the paper.
@@ -134,6 +138,9 @@ class PSOVectorized:
             omega (float): Inertia weight used for this step's velocity update.
             c1 (float): Cognitive coefficient used for this step.
             c2 (float): Social coefficient used for this step.
+            step (int): Current optimization step number.
+            function_name (Optional[str]): Name of the function being optimized.
+            run_id (int): ID of the current run.
 
         Returns:
             tuple: (metrics, gbest_value, converged)
@@ -189,9 +196,9 @@ class PSOVectorized:
                     evaluated_feasible_fitness = np.array([self.objective_function.evaluate(p) for p in feasible_positions])
 
                 # Check for non-finite values returned by the objective function
-                if not np.all(np.isfinite(evaluated_feasible_fitness)):
+                if not np.all(np.isfinite(evaluated_feasible_fitness)):  # type: ignore
                      log_warning("Non-finite fitness values detected from objective function evaluation. Replacing with inf.", module_name)
-                     evaluated_feasible_fitness[~np.isfinite(evaluated_feasible_fitness)] = np.inf
+                     evaluated_feasible_fitness[~np.isfinite(evaluated_feasible_fitness)] = np.inf  # type: ignore
 
                 # Assign evaluated fitness to the correct indices in the full fitness array
                 fitness_values[feasible_mask] = evaluated_feasible_fitness
@@ -245,7 +252,10 @@ class PSOVectorized:
                     bounds=self.bounds,
                     omega=omega,
                     c1=c1,
-                    c2=c2
+                    c2=c2,
+                    step=step,
+                    function_name=function_name,
+                    run_id=run_id
                 )
             except Exception as e:
                 log_error(f"Error computing metrics: {e}", module_name)
