@@ -4,6 +4,7 @@ import numpy as np
 import math
 import traceback
 from pathlib import Path
+from typing import Dict, Any, Optional, Tuple
 
 from SAPSO_AGENT.SAPSO.PSO.Cognitive.GBest import GlobalBestStrategy
 
@@ -61,11 +62,11 @@ class Environment(gym.Env):
 
         # --- Initialize PSOVectorized ---
         try:
-            self.strategy = GlobalBestStrategy(None)
+            # Create PSO first, then create strategy with the PSO instance
             self.pso = PSOSwarm(
                 objective_function=self.obj_fn,
                 num_particles=self.num_particles,
-                strategy=self.strategy,
+                strategy=None,  # We'll set this after PSO creation
                 v_clamp_ratio=self.v_clamp_ratio,
                 use_velocity_clamping=self.use_velocity_clamping,
                 convergence_patience=self.convergence_patience,
@@ -73,7 +74,8 @@ class Environment(gym.Env):
                 convergence_threshold_pbest_std=self.convergence_threshold_pbest_std,
                 # stability_threshold is now handled within metrics if needed, or implicitly via Poli's
             )
-            self.strategy.swarm = self.pso
+            # Create strategy with the PSO instance
+            self.strategy = GlobalBestStrategy(self.pso)
             self.last_gbest = self.pso.gbest_value
             log_info(f"PSOVectorized instance created successfully. Initial gbest: {self.last_gbest:.4e}", module_name)
         except Exception as e:
@@ -135,19 +137,22 @@ class Environment(gym.Env):
             self.pso = PSOSwarm(  # Re-initialize PSO
                 objective_function=self.obj_fn,
                 num_particles=self.num_particles,
-                strategy=self.strategy,
+                strategy=None,  # We'll set this after PSO creation
                 v_clamp_ratio=self.v_clamp_ratio,
                 use_velocity_clamping=self.use_velocity_clamping,
                 convergence_patience=self.convergence_patience,
                 convergence_threshold_gbest=self.convergence_threshold_gbest,
                 convergence_threshold_pbest_std=self.convergence_threshold_pbest_std,
             )
+            # Recreate strategy with the new PSO instance
+            self.strategy = GlobalBestStrategy(self.pso)
             self.last_gbest = self.pso.gbest_value
             log_info(f"Environment reset complete. Initial gbest: {self.last_gbest:.4e}", module_name)
         except Exception as e:
             log_error(f"Failed to re-initialize PSOVectorized during reset: {e}", module_name)
             log_error(traceback.format_exc(), module_name)
-            default_obs = np.zeros(self.observation_space.shape, dtype=np.float32)
+            # Fix the shape issue by providing a default shape
+            default_obs = np.zeros(4, dtype=np.float32)  # Fixed shape for observation space
             return default_obs, {'error': 'PSO reset failed'}
 
         # Get initial metrics for observation
@@ -204,8 +209,14 @@ class Environment(gym.Env):
 
             try:
                 # pso.optimize_step now returns metrics aligned with paper definitions
+                # Pass the new parameters for enhanced metrics tracking
                 step_metrics, current_gbest, converged_this_step = self.pso.optimize_step(
-                    current_omega, current_c1, current_c2
+                    omega=current_omega, 
+                    c1=current_c1, 
+                    c2=current_c2,
+                    step=self.current_step,
+                    function_name=self.obj_fn.__class__.__name__,
+                    run_id=0  # Could be enhanced to track multiple runs
                 )
                 self.current_step += 1
                 steps_taken_this_turn += 1
