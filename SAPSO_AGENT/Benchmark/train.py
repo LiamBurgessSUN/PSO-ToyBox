@@ -8,6 +8,7 @@ import time
 import traceback  # For logging exceptions
 from pathlib import Path
 from typing import Dict, Any, Optional, Tuple
+from datetime import datetime
 
 from SAPSO_AGENT.SAPSO.RL.ActorCritic.Agent import SACAgent
 from SAPSO_AGENT.SAPSO.RL.Replay.ReplayBuffer import ReplayBuffer
@@ -16,6 +17,26 @@ from SAPSO_AGENT.SAPSO.Environment.Environment import Environment
 from SAPSO_AGENT.SAPSO.PSO.ObjectiveFunctions.Training.Loader import objective_function_classes
 from SAPSO_AGENT.Logs.logger import *
 from SAPSO_AGENT.CONFIG import *
+
+# Import the new SAPSO plotting functionality
+from SAPSO_AGENT.SAPSO.Graphics.sapso_plotting import SAPSOPlotter
+from SAPSO_AGENT.CONFIG import PLOT_ONLY_AVERAGES
+
+
+def generate_timestamped_filename(base_name: str, extension: str = "png") -> str:
+    """
+    Generate a filename with timestamp and base name.
+    
+    Args:
+        base_name: The base name for the file
+        extension: File extension (default: "png")
+    
+    Returns:
+        str: Timestamped filename in format "YYYYMMDD_HHMMSS_base_name.extension"
+    """
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    return f"{timestamp}_{base_name}.{extension}"
+
 
 # --- Main Training Function (Accepts Arguments) ---
 def train_agent(
@@ -131,13 +152,17 @@ def train_agent(
         checkpoint_base_dir = project_root_fallback / "SAPSO" / "checkpoints"  # Example adjusted path
         log_warning(f"checkpoint_base_dir not provided, using default: {checkpoint_base_dir}", module_name)
 
+    # Add 'train' subdirectory for all training outputs
+    train_output_dir = Path(checkpoint_base_dir) / "train"
+    os.makedirs(train_output_dir, exist_ok=True)
+
     # Generate model filename based on CONFIG settings
     mode_suffix = "adaptive_nt" if adaptive_nt_mode else f"fixed_nt{agent_step_size}"
     timestamp_suffix = f"_{int(time.time())}" if INCLUDE_TIMESTAMP else ""
     version_suffix = MODEL_VERSION_SUFFIX if MODEL_VERSION_SUFFIX else ""
     
     model_filename = f"{MODEL_NAME_PREFIX}_{mode_suffix}{version_suffix}{timestamp_suffix}"
-    checkpoint_dir = Path(checkpoint_base_dir) / f"checkpoints_sapso_vectorized_{mode_suffix}"
+    checkpoint_dir = train_output_dir / f"checkpoints_sapso_vectorized_{mode_suffix}"
     checkpoint_file = checkpoint_dir / f"{model_filename}_checkpoint.pth"
     final_model_file = checkpoint_dir / f"{model_filename}_final.pth"
     
@@ -183,6 +208,10 @@ def train_agent(
     total_agent_steps = 0
     total_episodes_run = 0
     current_run_id = 0  # Track run ID for metrics
+    
+    # --- Metrics Collection for Plotting ---
+    metrics_collector = None  # Will be initialized with the first environment's metrics calculator
+    accumulated_metrics = {}  # Store metrics data across all episodes
 
     # --- Main Training Loop (Nested) ---
     log_header("Starting training...", module_name)
@@ -190,6 +219,7 @@ def train_agent(
 
     # Outer loop: Iterate through each objective function
     random.shuffle(objective_function_classes)
+    # for func_index, selected_func_class in enumerate(objective_function_classes):
     for func_index, selected_func_class in enumerate(objective_function_classes[:5]):
         func_name = selected_func_class.__name__
         log_header(f"===== Training on Function {func_index + 1}/{len(objective_function_classes)}: {func_name} =====",
@@ -214,6 +244,9 @@ def train_agent(
                 # Objective function doesn't need num_particles directly
                 obj_func_instance = selected_func_class(dim=current_dim)
 
+                # Store the run ID for this episode to pass to the environment
+                episode_run_id = current_run_id
+                
                 # --- Use PSOEnvVectorized ---
                 train_env = Environment(
                     obj_func=obj_func_instance,
@@ -229,7 +262,14 @@ def train_agent(
                     convergence_threshold_gbest=convergence_threshold_gbest,
                     convergence_threshold_pbest_std=convergence_threshold_pbest_std,
                     # stability_threshold=stability_threshold
+                    run_id=episode_run_id
                 )
+                
+                # Initialize metrics collector with the first environment's metrics calculator
+                if metrics_collector is None and hasattr(train_env, 'pso') and hasattr(train_env.pso, 'metrics_calculator'):
+                    metrics_collector = train_env.pso.metrics_calculator
+                    log_info("Initialized metrics collector for plotting", module_name)
+                
                 # Use total_episodes_run for seed consistency across restarts if needed
                 # TODO eval seed effect
                 # state, _ = train_env.reset(seed=total_episodes_run)
@@ -325,6 +365,67 @@ def train_agent(
             log_info(f"  Final GBest: {final_gbest_for_log:.6e}", module_name)
             log_info(f"  Global PSO Steps: {global_step_count}", module_name)
             log_info(f"  Total Agent Steps: {total_agent_steps}", module_name)
+
+            # Store metrics data from this episode for plotting
+            if train_env and hasattr(train_env, 'pso') and hasattr(train_env.pso, 'metrics_calculator'):
+                episode_metrics = train_env.pso.metrics_calculator
+                if episode_metrics is not None and hasattr(episode_metrics, 'metric_tracking') and episode_metrics.metric_tracking:
+                    # Accumulate metrics data
+                    for func_name, data in episode_metrics.metric_tracking.items():
+                        if func_name not in accumulated_metrics:
+                            accumulated_metrics[func_name] = data
+                        else:
+                            # Merge data from multiple episodes
+                            for metric_name, values in data.items():
+                                if metric_name in accumulated_metrics[func_name]:
+                                    existing = accumulated_metrics[func_name][metric_name]
+                                    if isinstance(existing, list) and isinstance(values, list):
+                                        existing.extend(values)
+                                    elif isinstance(existing, dict) and isinstance(values, dict):
+                                        for k, v in values.items():
+                                            if k in existing and isinstance(existing[k], list) and isinstance(v, list):
+                                                existing[k].extend(v)
+                                            elif k in existing and isinstance(existing[k], dict) and isinstance(v, dict):
+                                                for k2, v2 in v.items():
+                                                    if k2 in existing[k] and isinstance(existing[k][k2], list) and isinstance(v2, list):
+                                                        existing[k][k2].extend(v2)
+                                                    else:
+                                                        existing[k][k2] = v2
+                                                else:
+                                                    existing[k] = v
+                                        else:
+                                            accumulated_metrics[func_name][metric_name] = values
+                                    else:
+                                        accumulated_metrics[func_name][metric_name] = values.copy() if isinstance(values, list) else values
+
+                    # Also accumulate parameter data
+                    if hasattr(episode_metrics, 'parameter_tracking') and episode_metrics.parameter_tracking:
+                        for func_name, data in episode_metrics.parameter_tracking.items():
+                            if func_name not in accumulated_metrics:
+                                accumulated_metrics[func_name] = data
+                            else:
+                                # Merge parameter data
+                                for param_name, values in data.items():
+                                    if param_name in accumulated_metrics[func_name]:
+                                        existing = accumulated_metrics[func_name][param_name]
+                                        if isinstance(existing, list) and isinstance(values, list):
+                                            existing.extend(values)
+                                        elif isinstance(existing, dict) and isinstance(values, dict):
+                                            for k, v in values.items():
+                                                if k in existing and isinstance(existing[k], list) and isinstance(v, list):
+                                                    existing[k].extend(v)
+                                                elif k in existing and isinstance(existing[k], dict) and isinstance(v, dict):
+                                                    for k2, v2 in v.items():
+                                                        if k2 in existing[k] and isinstance(existing[k][k2], list) and isinstance(v2, list):
+                                                            existing[k][k2].extend(v2)
+                                                        else:
+                                                            existing[k][k2] = v2
+                                                else:
+                                                    existing[k] = v
+                                        else:
+                                            accumulated_metrics[func_name][param_name] = values
+                                    else:
+                                        accumulated_metrics[func_name][param_name] = values.copy() if isinstance(values, list) else values
 
             try:
                 if train_env: train_env.close()
@@ -459,9 +560,9 @@ def train_agent(
             plt.xticks(rotation=45)
             plt.tight_layout()
             
-            # Save the plot
-            plot_filename = f"{model_filename}_train_rewards_per_func_static.png"
-            plot_path = checkpoint_dir / plot_filename
+            # Save the plot in the train directory
+            timestamped_filename = generate_timestamped_filename(f"{model_filename}_train_rewards_per_func_static")
+            plot_path = train_output_dir / timestamped_filename
             plt.savefig(plot_path, dpi=300, bbox_inches='tight')
             plt.close()
             log_success(f"Training reward plot saved to: {plot_path}", module_name)
@@ -469,6 +570,42 @@ def train_agent(
             log_warning("No valid function names for plotting.", module_name)
     else:
         log_warning("No average rewards calculated for plotting.", module_name)
+
+    # --- Generate SAPSO Metric Plots ---
+    log_header("Generating SAPSO metric plots", module_name)
+    
+    if accumulated_metrics:
+        try:
+            # Create a mock metrics calculator with accumulated data
+            class MockMetricsCalculator:
+                def __init__(self, metric_tracking, parameter_tracking):
+                    self.metric_tracking = metric_tracking
+                    self.parameter_tracking = parameter_tracking
+            
+            # Separate metric and parameter tracking data
+            metric_tracking = {}
+            parameter_tracking = {}
+            
+            for func_name, data in accumulated_metrics.items():
+                # Check if this is metric data or parameter data
+                if 'avg_step_size' in data or 'swarm_diversity' in data:
+                    metric_tracking[func_name] = data
+                if 'omega' in data or 'c1' in data:
+                    parameter_tracking[func_name] = data
+            
+            if metric_tracking or parameter_tracking:
+                mock_metrics = MockMetricsCalculator(metric_tracking, parameter_tracking)
+                plotter = SAPSOPlotter(str(train_output_dir), plot_only_averages=PLOT_ONLY_AVERAGES)
+                plotter.plot_all_metrics(mock_metrics, save_plots=True, show_plots=False)
+                log_success("SAPSO metric plots generated successfully", module_name)
+            else:
+                log_warning("No valid metrics or parameter data found in accumulated data", module_name)
+        except Exception as e:
+            log_error(f"Error generating SAPSO metric plots: {e}", module_name)
+            log_error(traceback.format_exc(), module_name)
+    else:
+        log_warning("No metrics data available for plotting. Metrics collection may not be properly configured.", module_name)
+        log_info("To enable metrics plotting, ensure the PSO environment is properly configured with metrics tracking.", module_name)
 
     return agent, results_log
 

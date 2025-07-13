@@ -41,4 +41,7 @@ MODEL_METADATA_SAVE = True         # Save training metadata with model
 # --- Checkpoint/Output Config ---
 # Construct paths relative to the project root found earlier
 # (Checkpoint filenames are constructed inside train/test based on config)
-CHECKPOINT_BASE_DIR = "Benchmark/models"  # Relative path for models/checkpoints
+CHECKPOINT_BASE_DIR = "Figures/"  # Relative path for models/checkpoints
+
+# --- Plotting Config ---
+PLOT_ONLY_AVERAGES = True  # If True, only generate average plots across all functions, skip individual function plots

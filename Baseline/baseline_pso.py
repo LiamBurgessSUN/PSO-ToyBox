@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import traceback
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional, Union
+from datetime import datetime
 
 # Import the training and test functions from SAPSO_AGENT
 from SAPSO_AGENT.Benchmark.train import train_agent as sapso_train_agent
@@ -41,6 +42,21 @@ from SAPSO_AGENT.SAPSO.Graphics.graphing import (
 
 # Import parameter strategies
 from Baseline.parameter_strategies import ParameterStrategy, create_strategy, list_available_strategies
+
+
+def generate_timestamped_filename(base_name: str, extension: str = "png") -> str:
+    """
+    Generate a filename with timestamp and base name.
+    
+    Args:
+        base_name: The base name for the file
+        extension: File extension (default: "png")
+    
+    Returns:
+        str: Timestamped filename in format "YYYYMMDD_HHMMSS_base_name.extension"
+    """
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    return f"{timestamp}_{base_name}.{extension}"
 
 
 class BaselinePSO:
@@ -588,7 +604,6 @@ class BaselinePSO:
             checkpoint_dir = Path(self.checkpoint_base_dir) / "parameter_evolution"
             checkpoint_dir.mkdir(parents=True, exist_ok=True)
             
-            timestamp = int(time.time())
             strategy_name = self.parameter_strategy.__class__.__name__
             
             # Create filename with function names
@@ -596,8 +611,8 @@ class BaselinePSO:
             if len(function_names) > 3:
                 func_suffix += f"_and_{len(function_names)-3}_more"
             
-            plot_filename = f"baseline_{strategy_name}_parameter_evolution_{func_suffix}_{timestamp}.png"
-            plot_path = checkpoint_dir / plot_filename
+            timestamped_filename = generate_timestamped_filename(f"baseline_{strategy_name}_parameter_evolution_{func_suffix}")
+            plot_path = checkpoint_dir / timestamped_filename
             
             plt.savefig(plot_path, dpi=300, bbox_inches='tight')
             log_success(f"Parameter evolution plot saved to {plot_path}", self.module_name)
@@ -665,11 +680,10 @@ class BaselinePSO:
             checkpoint_dir = Path(self.checkpoint_base_dir) / "parameter_comparison"
             checkpoint_dir.mkdir(parents=True, exist_ok=True)
             
-            timestamp = int(time.time())
             strategy_name = self.parameter_strategy.__class__.__name__
             
-            plot_filename = f"baseline_{strategy_name}_parameter_comparison_{timestamp}.png"
-            plot_path = checkpoint_dir / plot_filename
+            timestamped_filename = generate_timestamped_filename(f"baseline_{strategy_name}_parameter_comparison")
+            plot_path = checkpoint_dir / timestamped_filename
             
             plt.savefig(plot_path, dpi=300, bbox_inches='tight')
             log_success(f"Parameter comparison plot saved to {plot_path}", self.module_name)
@@ -776,11 +790,10 @@ class BaselinePSO:
             checkpoint_dir = Path(self.checkpoint_base_dir) / "average_parameters"
             checkpoint_dir.mkdir(parents=True, exist_ok=True)
             
-            timestamp = int(time.time())
             strategy_name = self.parameter_strategy.__class__.__name__
             
-            plot_filename = f"baseline_{strategy_name}_average_parameters_{len(function_names)}_functions_{timestamp}.png"
-            plot_path = checkpoint_dir / plot_filename
+            timestamped_filename = generate_timestamped_filename(f"baseline_{strategy_name}_average_parameters_{len(function_names)}_functions")
+            plot_path = checkpoint_dir / timestamped_filename
             
             plt.savefig(plot_path, dpi=300, bbox_inches='tight')
             log_success(f"Average parameter plot saved to {plot_path}", self.module_name)
@@ -871,8 +884,9 @@ class BaselinePSO:
             if save_plots and self.checkpoint_base_dir is not None:
                 checkpoint_dir = Path(self.checkpoint_base_dir) / "stability_condition"
                 checkpoint_dir.mkdir(parents=True, exist_ok=True)
-                plt.savefig(checkpoint_dir / f"stability_condition_{func_name}.png", dpi=300, bbox_inches='tight')
-                log_success(f"Stability condition plot saved for {func_name}", self.module_name)
+                timestamped_filename = generate_timestamped_filename(f"stability_condition_{func_name}")
+                plt.savefig(checkpoint_dir / timestamped_filename, dpi=300, bbox_inches='tight')
+                log_success(f"Stability condition plot saved for {func_name}: {timestamped_filename}", self.module_name)
             if show_plots:
                 plt.show()
             plt.close()
@@ -943,8 +957,9 @@ class BaselinePSO:
         if save_plots and self.checkpoint_base_dir is not None:
             checkpoint_dir = Path(self.checkpoint_base_dir) / "stability_condition"
             checkpoint_dir.mkdir(parents=True, exist_ok=True)
-            plt.savefig(checkpoint_dir / f"stability_condition_average.png", dpi=300, bbox_inches='tight')
-            log_success("Average stability condition plot saved", self.module_name)
+            timestamped_filename = generate_timestamped_filename("stability_condition_average")
+            plt.savefig(checkpoint_dir / timestamped_filename, dpi=300, bbox_inches='tight')
+            log_success(f"Average stability condition plot saved: {timestamped_filename}", self.module_name)
         if show_plots:
             plt.show()
         plt.close()
@@ -1018,8 +1033,9 @@ class BaselinePSO:
             if save_plots and self.checkpoint_base_dir is not None:
                 checkpoint_dir = Path(self.checkpoint_base_dir) / "infeasible_particles"
                 checkpoint_dir.mkdir(parents=True, exist_ok=True)
-                plt.savefig(checkpoint_dir / f"infeasible_particles_{func_name}.png", dpi=300, bbox_inches='tight')
-                log_success(f"Infeasible particles plot saved for {func_name}", self.module_name)
+                timestamped_filename = generate_timestamped_filename(f"infeasible_particles_{func_name}")
+                plt.savefig(checkpoint_dir / timestamped_filename, dpi=300, bbox_inches='tight')
+                log_success(f"Infeasible particles plot saved for {func_name}: {timestamped_filename}", self.module_name)
             if show_plots:
                 plt.show()
             plt.close()
@@ -1065,8 +1081,9 @@ class BaselinePSO:
             if save_plots and self.checkpoint_base_dir is not None:
                 checkpoint_dir = Path(self.checkpoint_base_dir) / "infeasible_particles"
                 checkpoint_dir.mkdir(parents=True, exist_ok=True)
-                plt.savefig(checkpoint_dir / f"infeasible_particles_average.png", dpi=300, bbox_inches='tight')
-                log_success("Average infeasible particles plot saved", self.module_name)
+                timestamped_filename = generate_timestamped_filename("infeasible_particles_average")
+                plt.savefig(checkpoint_dir / timestamped_filename, dpi=300, bbox_inches='tight')
+                log_success(f"Average infeasible particles plot saved: {timestamped_filename}", self.module_name)
             if show_plots:
                 plt.show()
             plt.close()
@@ -1143,8 +1160,9 @@ class BaselinePSO:
             if save_plots and self.checkpoint_base_dir is not None:
                 checkpoint_dir = Path(self.checkpoint_base_dir) / "average_velocity"
                 checkpoint_dir.mkdir(parents=True, exist_ok=True)
-                plt.savefig(checkpoint_dir / f"average_velocity_{func_name}.png", dpi=300, bbox_inches='tight')
-                log_success(f"Average velocity plot saved for {func_name}", self.module_name)
+                timestamped_filename = generate_timestamped_filename(f"average_velocity_{func_name}")
+                plt.savefig(checkpoint_dir / timestamped_filename, dpi=300, bbox_inches='tight')
+                log_success(f"Average velocity plot saved for {func_name}: {timestamped_filename}", self.module_name)
             if show_plots:
                 plt.show()
             plt.close()
@@ -1190,8 +1208,9 @@ class BaselinePSO:
             if save_plots and self.checkpoint_base_dir is not None:
                 checkpoint_dir = Path(self.checkpoint_base_dir) / "average_velocity"
                 checkpoint_dir.mkdir(parents=True, exist_ok=True)
-                plt.savefig(checkpoint_dir / f"average_velocity_average.png", dpi=300, bbox_inches='tight')
-                log_success("Average velocity plot saved", self.module_name)
+                timestamped_filename = generate_timestamped_filename("average_velocity_average")
+                plt.savefig(checkpoint_dir / timestamped_filename, dpi=300, bbox_inches='tight')
+                log_success(f"Average velocity plot saved: {timestamped_filename}", self.module_name)
             if show_plots:
                 plt.show()
             plt.close()
@@ -1241,11 +1260,13 @@ class BaselinePSO:
             if save_plots and self.checkpoint_base_dir is not None:
                 checkpoint_dir = Path(self.checkpoint_base_dir) / "swarm_diversity"
                 checkpoint_dir.mkdir(parents=True, exist_ok=True)
-                plt.savefig(checkpoint_dir / f"swarm_diversity_{function_name}.png", dpi=300, bbox_inches='tight')
-                log_success(f"Swarm diversity plot saved for {function_name}", self.module_name)
+                timestamped_filename = generate_timestamped_filename(f"swarm_diversity_{function_name}")
+                plt.savefig(checkpoint_dir / timestamped_filename, dpi=300, bbox_inches='tight')
+                log_success(f"Swarm diversity plot saved for {function_name}: {timestamped_filename}", self.module_name)
             elif save_plots:
-                plt.savefig(f'baseline_swarm_diversity_{function_name}.png', dpi=300, bbox_inches='tight')
-                log_success(f"Swarm diversity plot saved for {function_name}", self.module_name)
+                timestamped_filename = generate_timestamped_filename(f"baseline_swarm_diversity_{function_name}")
+                plt.savefig(timestamped_filename, dpi=300, bbox_inches='tight')
+                log_success(f"Swarm diversity plot saved for {function_name}: {timestamped_filename}", self.module_name)
             
             if show_plots:
                 plt.show()
@@ -1316,11 +1337,13 @@ class BaselinePSO:
             if save_plots and self.checkpoint_base_dir is not None:
                 checkpoint_dir = Path(self.checkpoint_base_dir) / "swarm_diversity"
                 checkpoint_dir.mkdir(parents=True, exist_ok=True)
-                plt.savefig(checkpoint_dir / f"swarm_diversity_average.png", dpi=300, bbox_inches='tight')
-                log_success("Average swarm diversity plot saved", self.module_name)
+                timestamped_filename = generate_timestamped_filename("swarm_diversity_average")
+                plt.savefig(checkpoint_dir / timestamped_filename, dpi=300, bbox_inches='tight')
+                log_success(f"Average swarm diversity plot saved: {timestamped_filename}", self.module_name)
             elif save_plots:
-                plt.savefig(f'baseline_swarm_diversity_average.png', dpi=300, bbox_inches='tight')
-                log_success("Average swarm diversity plot saved", self.module_name)
+                timestamped_filename = generate_timestamped_filename("baseline_swarm_diversity_average")
+                plt.savefig(timestamped_filename, dpi=300, bbox_inches='tight')
+                log_success(f"Average swarm diversity plot saved: {timestamped_filename}", self.module_name)
             
             if show_plots:
                 plt.show()

@@ -11,6 +11,21 @@ from pathlib import Path
 import argparse
 from datetime import datetime
 
+
+def generate_timestamped_filename(base_name: str, extension: str = "png") -> str:
+    """
+    Generate a filename with timestamp and base name.
+    
+    Args:
+        base_name: The base name for the file
+        extension: File extension (default: "png")
+    
+    Returns:
+        str: Timestamped filename in format "YYYYMMDD_HHMMSS_base_name.extension"
+    """
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    return f"{timestamp}_{base_name}.{extension}"
+
 def load_monitoring_data(file_path: str):
     """Load monitoring data from JSON file."""
     with open(file_path, 'r') as f:
@@ -144,6 +159,10 @@ def plot_resources(analysis_data, output_file=None):
     plt.tight_layout()
     
     if output_file:
+        # Generate timestamped filename if output_file doesn't have extension
+        if not output_file.endswith('.png'):
+            timestamped_filename = generate_timestamped_filename(output_file)
+            output_file = timestamped_filename
         plt.savefig(output_file, dpi=300, bbox_inches='tight')
         print(f"Plot saved to: {output_file}")
     

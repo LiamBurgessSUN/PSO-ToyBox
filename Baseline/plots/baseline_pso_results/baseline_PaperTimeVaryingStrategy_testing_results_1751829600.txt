@@ -7,56 +7,56 @@ Environment: dim=30, particles=30, max_steps=5000
 Function: CrossLegTableFunction
 ----------------------------------------
   Mean GBest: 4.539993e-05
-  Std GBest: 4.422777e-20
+  Std GBest: 3.857117e-20
   Min GBest: 4.539993e-05
   Max GBest: 4.539993e-05
-  Successful runs: 30/30
+  Successful runs: 10/10
 
 Function: Lanczos3Function
 ----------------------------------------
-  Mean GBest: -1.047048e-01
-  Std GBest: 6.508089e-02
+  Mean GBest: -7.588448e-02
+  Std GBest: 7.148666e-02
   Min GBest: -1.472667e-01
-  Max GBest: -7.124453e-06
-  Successful runs: 30/30
+  Max GBest: -9.952963e-05
+  Successful runs: 10/10
 
 Function: MichalewiczFunction
 ----------------------------------------
-  Mean GBest: -2.591786e+01
-  Std GBest: 7.755807e-01
-  Min GBest: -2.755072e+01
-  Max GBest: -2.429492e+01
-  Successful runs: 30/30
+  Mean GBest: -2.567693e+01
+  Std GBest: 4.281142e-01
+  Min GBest: -2.657573e+01
+  Max GBest: -2.520076e+01
+  Successful runs: 10/10
 
 Function: Schaffer4Function
 ----------------------------------------
-  Mean GBest: 1.365719e+01
-  Std GBest: 1.649317e-01
-  Min GBest: 1.325345e+01
-  Max GBest: 1.398550e+01
-  Successful runs: 30/30
+  Mean GBest: 1.366981e+01
+  Std GBest: 8.307584e-02
+  Min GBest: 1.351079e+01
+  Max GBest: 1.377833e+01
+  Successful runs: 10/10
 
 Function: SineEnvelopeFunction
 ----------------------------------------
-  Mean GBest: 3.900253e+00
-  Std GBest: 1.100541e+00
-  Min GBest: 1.418570e+00
-  Max GBest: 5.736688e+00
-  Successful runs: 30/30
+  Mean GBest: 3.826701e+00
+  Std GBest: 1.278719e+00
+  Min GBest: 1.890092e+00
+  Max GBest: 6.118141e+00
+  Successful runs: 10/10
 
 Function: StretchedVSineWaveFunction
 ----------------------------------------
-  Mean GBest: 5.815417e+00
-  Std GBest: 7.455519e-01
-  Min GBest: 4.109288e+00
-  Max GBest: 7.153272e+00
-  Successful runs: 30/30
+  Mean GBest: 6.084699e+00
+  Std GBest: 6.667946e-01
+  Min GBest: 5.210795e+00
+  Max GBest: 7.184451e+00
+  Successful runs: 10/10
 
 Function: WavyFunction
 ----------------------------------------
-  Mean GBest: 1.256607e-01
-  Std GBest: 4.461835e-02
-  Min GBest: 3.716003e-02
-  Max GBest: 2.225149e-01
-  Successful runs: 30/30
+  Mean GBest: 1.579857e-01
+  Std GBest: 3.528683e-02
+  Min GBest: 8.900109e-02
+  Max GBest: 2.175339e-01
+  Successful runs: 10/10
 

@@ -8,6 +8,7 @@ import numpy as np
 import os
 import traceback # For logging exceptions
 from pathlib import Path # To get module name
+from datetime import datetime
 
 # --- Import Logger ---
 try:
@@ -25,6 +26,21 @@ except ImportError:
 
 # --- Module Name for Logging ---
 module_name = Path(__file__).stem # Gets 'graphing'
+
+
+def generate_timestamped_filename(base_name: str, extension: str = "png") -> str:
+    """
+    Generate a filename with timestamp and base name.
+    
+    Args:
+        base_name: The base name for the file
+        extension: File extension (default: "png")
+    
+    Returns:
+        str: Timestamped filename in format "YYYYMMDD_HHMMSS_base_name.extension"
+    """
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    return f"{timestamp}_{base_name}.{extension}"
 
 
 # === Helper function to aggregate data ===
@@ -171,7 +187,8 @@ def _plot_metric_mean_std(valid_steps, means, stds, num_runs,
     plt.tight_layout()
 
     os.makedirs(checkpoint_dir, exist_ok=True)
-    plot_filename = os.path.join(checkpoint_dir, filename_suffix)
+    timestamped_filename = generate_timestamped_filename(filename_suffix.replace('.png', ''))
+    plot_filename = os.path.join(checkpoint_dir, timestamped_filename)
     try:
         plt.savefig(plot_filename)
         log_success(f"Plot saved to {plot_filename}", module_name)
@@ -260,7 +277,8 @@ def plot_evaluation_parameters(eval_data, max_steps, checkpoint_dir, checkpoint_
     plt.xlabel("PSO Time Steps"); plt.ylabel("Parameter Value")
     plt.title(title); plt.legend(loc='best')
     plt.grid(True); plt.ylim(bottom=0); plt.xlim(0, max_steps); plt.tight_layout()
-    plot_filename = os.path.join(checkpoint_dir, f"{checkpoint_prefix}_eval_params_mean_std.png")
+    timestamped_filename = generate_timestamped_filename(f"{checkpoint_prefix}_eval_params_mean_std")
+    plot_filename = os.path.join(checkpoint_dir, timestamped_filename)
     try:
         plt.savefig(plot_filename)
         log_success(f"Plot saved: {plot_filename}", module_name)
@@ -393,7 +411,8 @@ def plot_final_gbest_per_function(eval_data, max_steps, checkpoint_dir, checkpoi
         plt.yscale('log')
         plt.ylabel('Final Global Best Value (log scale)')
     
-    plot_filename = os.path.join(checkpoint_dir, f"{checkpoint_prefix}_final_gbest_per_function.png")
+    timestamped_filename = generate_timestamped_filename(f"{checkpoint_prefix}_final_gbest_per_function")
+    plot_filename = os.path.join(checkpoint_dir, timestamped_filename)
     try:
         plt.savefig(plot_filename, dpi=300, bbox_inches='tight')
         log_success(f"Final GBest per function plot saved: {plot_filename}", module_name)
@@ -478,7 +497,8 @@ def plot_gbest_convergence_per_function(eval_data, max_steps, checkpoint_dir, ch
     plt.suptitle(f'GBest Convergence per Function ({num_functions} functions)', fontsize=14)
     plt.tight_layout()
     
-    plot_filename = os.path.join(checkpoint_dir, f"{checkpoint_prefix}_gbest_convergence_per_function.png")
+    timestamped_filename = generate_timestamped_filename(f"{checkpoint_prefix}_gbest_convergence_per_function")
+    plot_filename = os.path.join(checkpoint_dir, timestamped_filename)
     try:
         plt.savefig(plot_filename, dpi=300, bbox_inches='tight')
         log_success(f"GBest convergence per function plot saved: {plot_filename}", module_name)

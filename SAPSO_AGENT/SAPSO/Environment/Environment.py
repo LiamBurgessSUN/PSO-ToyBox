@@ -36,6 +36,7 @@ class Environment(gym.Env):
                  convergence_patience=50,
                  convergence_threshold_gbest=1e-8,
                  convergence_threshold_pbest_std=1e-6,
+                 run_id=0,  # Add run_id parameter for metrics tracking
                  # stability_threshold removed as Poli's condition is used inside metrics
                  ):
         """
@@ -74,6 +75,8 @@ class Environment(gym.Env):
                 convergence_threshold_pbest_std=self.convergence_threshold_pbest_std,
                 # stability_threshold is now handled within metrics if needed, or implicitly via Poli's
             )
+            # Store run_id for metrics tracking
+            self.run_id = run_id
             # Create strategy with the PSO instance
             self.strategy = GlobalBestStrategy(self.pso)
             self.last_gbest = self.pso.gbest_value
@@ -216,7 +219,7 @@ class Environment(gym.Env):
                     c2=current_c2,
                     step=self.current_step,
                     function_name=self.obj_fn.__class__.__name__,
-                    run_id=0  # Could be enhanced to track multiple runs
+                    run_id=self.run_id  # Use the stored run_id for metrics tracking
                 )
                 self.current_step += 1
                 steps_taken_this_turn += 1

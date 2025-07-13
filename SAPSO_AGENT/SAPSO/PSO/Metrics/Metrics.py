@@ -10,11 +10,27 @@ import traceback  # For logging exceptions
 from pathlib import Path  # To get module name
 from typing import Dict, List, Tuple, Optional, Union
 import time
+from datetime import datetime
 
 from SAPSO_AGENT.Logs.logger import *
 
 # --- Module Name for Logging ---
 module_name = Path(__file__).stem  # Gets 'Metrics'
+
+
+def generate_timestamped_filename(base_name: str, extension: str = "png") -> str:
+    """
+    Generate a filename with timestamp and base name.
+    
+    Args:
+        base_name: The base name for the file
+        extension: File extension (default: "png")
+    
+    Returns:
+        str: Timestamped filename in format "YYYYMMDD_HHMMSS_base_name.extension"
+    """
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    return f"{timestamp}_{base_name}.{extension}"
 
 
 class SwarmMetrics:
@@ -313,8 +329,9 @@ class SwarmMetrics:
             if save_plots and self.checkpoint_base_dir is not None:
                 checkpoint_dir = Path(self.checkpoint_base_dir) / "stability_condition"
                 checkpoint_dir.mkdir(parents=True, exist_ok=True)
-                plt.savefig(checkpoint_dir / f"stability_condition_{func_name}.png", dpi=300, bbox_inches='tight')
-                log_success(f"Stability condition plot saved for {func_name}", module_name)
+                timestamped_filename = generate_timestamped_filename(f"stability_condition_{func_name}")
+                plt.savefig(checkpoint_dir / timestamped_filename, dpi=300, bbox_inches='tight')
+                log_success(f"Stability condition plot saved for {func_name}: {timestamped_filename}", module_name)
             if show_plots:
                 plt.show()
             plt.close()
@@ -384,8 +401,9 @@ class SwarmMetrics:
             if save_plots and self.checkpoint_base_dir is not None:
                 checkpoint_dir = Path(self.checkpoint_base_dir) / "infeasible_particles"
                 checkpoint_dir.mkdir(parents=True, exist_ok=True)
-                plt.savefig(checkpoint_dir / f"infeasible_particles_{func_name}.png", dpi=300, bbox_inches='tight')
-                log_success(f"Infeasible particles plot saved for {func_name}", module_name)
+                timestamped_filename = generate_timestamped_filename(f"infeasible_particles_{func_name}")
+                plt.savefig(checkpoint_dir / timestamped_filename, dpi=300, bbox_inches='tight')
+                log_success(f"Infeasible particles plot saved for {func_name}: {timestamped_filename}", module_name)
             if show_plots:
                 plt.show()
             plt.close()
@@ -456,8 +474,9 @@ class SwarmMetrics:
             if save_plots and self.checkpoint_base_dir is not None:
                 checkpoint_dir = Path(self.checkpoint_base_dir) / "average_velocity"
                 checkpoint_dir.mkdir(parents=True, exist_ok=True)
-                plt.savefig(checkpoint_dir / f"average_velocity_{func_name}.png", dpi=300, bbox_inches='tight')
-                log_success(f"Average velocity plot saved for {func_name}", module_name)
+                timestamped_filename = generate_timestamped_filename(f"average_velocity_{func_name}")
+                plt.savefig(checkpoint_dir / timestamped_filename, dpi=300, bbox_inches='tight')
+                log_success(f"Average velocity plot saved for {func_name}: {timestamped_filename}", module_name)
             if show_plots:
                 plt.show()
             plt.close()
@@ -531,11 +550,13 @@ class SwarmMetrics:
                 if save_plots and self.checkpoint_base_dir is not None:
                     checkpoint_dir = Path(self.checkpoint_base_dir) / "swarm_diversity"
                     checkpoint_dir.mkdir(parents=True, exist_ok=True)
-                    plt.savefig(checkpoint_dir / f"swarm_diversity_{func_name}.png", dpi=300, bbox_inches='tight')
-                    log_success(f"Swarm diversity plot saved for {func_name}", module_name)
+                    timestamped_filename = generate_timestamped_filename(f"swarm_diversity_{func_name}")
+                    plt.savefig(checkpoint_dir / timestamped_filename, dpi=300, bbox_inches='tight')
+                    log_success(f"Swarm diversity plot saved for {func_name}: {timestamped_filename}", module_name)
                 elif save_plots:
-                    plt.savefig(f'metrics_swarm_diversity_{func_name}.png', dpi=300, bbox_inches='tight')
-                    log_success(f"Swarm diversity plot saved for {func_name}", module_name)
+                    timestamped_filename = generate_timestamped_filename(f"metrics_swarm_diversity_{func_name}")
+                    plt.savefig(timestamped_filename, dpi=300, bbox_inches='tight')
+                    log_success(f"Swarm diversity plot saved for {func_name}: {timestamped_filename}", module_name)
                 
                 if show_plots:
                     plt.show()
@@ -612,15 +633,13 @@ class SwarmMetrics:
             checkpoint_dir = Path(self.checkpoint_base_dir) / "parameter_evolution"
             checkpoint_dir.mkdir(parents=True, exist_ok=True)
             
-            timestamp = int(time.time())
-            
             # Create filename with function names
             func_suffix = "_".join([name.replace("Function", "") for name in function_names[:3]])
             if len(function_names) > 3:
                 func_suffix += f"_and_{len(function_names)-3}_more"
             
-            plot_filename = f"metrics_parameter_evolution_{func_suffix}_{timestamp}.png"
-            plot_path = checkpoint_dir / plot_filename
+            timestamped_filename = generate_timestamped_filename(f"parameter_evolution_{func_suffix}")
+            plot_path = checkpoint_dir / timestamped_filename
             
             plt.savefig(plot_path, dpi=300, bbox_inches='tight')
             log_success(f"Parameter evolution plot saved to {plot_path}", module_name)

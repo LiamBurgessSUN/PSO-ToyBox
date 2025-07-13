@@ -1,0 +1,1394 @@
+{
+  "metadata": {
+    "start_time": 1752422411.9466023,
+    "end_time": 1752422448.9551158,
+    "duration_seconds": 37.008514165878296,
+    "interval_seconds": 1.0,
+    "data_points": 33,
+    "system_info": {
+      "platform": "win32",
+      "python_version": "3.13.5 (tags/v3.13.5:6cb20a2, Jun 11 2025, 16:15:46) [MSC v.1943 64 bit (AMD64)]",
+      "torch_available": true
+    }
+  },
+  "data": [
+    {
+      "timestamp": 1752422411.9466033,
+      "datetime": "2025-07-13T18:00:11.946603",
+      "cpu": {
+        "cpu_percent": 3.8,
+        "cpu_count": 32,
+        "cpu_freq": {
+          "current": 4501.0,
+          "min": 0.0,
+          "max": 4501.0
+        }
+      },
+      "memory": {
+        "memory_total_gb": 63.14142608642578,
+        "memory_available_gb": 50.18989181518555,
+        "memory_used_gb": 12.951534271240234,
+        "memory_percent": 20.5
+      },
+      "disk": {
+        "disk_total_gb": 1906.9308586120605,
+        "disk_used_gb": 1229.6885414123535,
+        "disk_free_gb": 677.242317199707,
+        "disk_percent": 64.5
+      },
+      "network": {
+        "network_bytes_sent": 193675213,
+        "network_bytes_recv": 351541048
+      },
+      "gpu": {
+        "gpu_count": 1,
+        "gpu_memory_total_gb": 11.99951171875,
+        "gpu_memory_allocated_gb": 0.0,
+        "gpu_memory_reserved_gb": 0.0,
+        "gpu_memory_free_gb": 11.99951171875
+      },
+      "process": {}
+    },
+    {
+      "timestamp": 1752422413.0727751,
+      "datetime": "2025-07-13T18:00:13.072775",
+      "cpu": {
+        "cpu_percent": 4.1,
+        "cpu_count": 32,
+        "cpu_freq": {
+          "current": 4501.0,
+          "min": 0.0,
+          "max": 4501.0
+        }
+      },
+      "memory": {
+        "memory_total_gb": 63.14142608642578,
+        "memory_available_gb": 49.96828079223633,
+        "memory_used_gb": 13.173145294189453,
+        "memory_percent": 20.9
+      },
+      "disk": {
+        "disk_total_gb": 1906.9308586120605,
+        "disk_used_gb": 1229.6885414123535,
+        "disk_free_gb": 677.242317199707,
+        "disk_percent": 64.5
+      },
+      "network": {
+        "network_bytes_sent": 193675213,
+        "network_bytes_recv": 351541048
+      },
+      "gpu": {
+        "gpu_count": 1,
+        "gpu_memory_total_gb": 11.99951171875,
+        "gpu_memory_allocated_gb": 0.0,
+        "gpu_memory_reserved_gb": 0.0,
+        "gpu_memory_free_gb": 11.99951171875
+      },
+      "process": {
+        "process_cpu_percent": 0.0,
+        "process_memory_gb": 0.01009368896484375,
+        "process_memory_percent": 0.01598584256083773,
+        "process_threads": 7
+      }
+    },
+    {
+      "timestamp": 1752422414.1935346,
+      "datetime": "2025-07-13T18:00:14.193535",
+      "cpu": {
+        "cpu_percent": 5.4,
+        "cpu_count": 32,
+        "cpu_freq": {
+          "current": 4501.0,
+          "min": 0.0,
+          "max": 4501.0
+        }
+      },
+      "memory": {
+        "memory_total_gb": 63.14142608642578,
+        "memory_available_gb": 49.725399017333984,
+        "memory_used_gb": 13.416027069091797,
+        "memory_percent": 21.2
+      },
+      "disk": {
+        "disk_total_gb": 1906.9308586120605,
+        "disk_used_gb": 1229.6885414123535,
+        "disk_free_gb": 677.242317199707,
+        "disk_percent": 64.5
+      },
+      "network": {
+        "network_bytes_sent": 193675505,
+        "network_bytes_recv": 351541382
+      },
+      "gpu": {
+        "gpu_count": 1,
+        "gpu_memory_total_gb": 11.99951171875,
+        "gpu_memory_allocated_gb": 0.0,
+        "gpu_memory_reserved_gb": 0.0,
+        "gpu_memory_free_gb": 11.99951171875
+      },
+      "process": {
+        "process_cpu_percent": 0.0,
+        "process_memory_gb": 0.01009368896484375,
+        "process_memory_percent": 0.01598584256083773,
+        "process_threads": 7
+      }
+    },
+    {
+      "timestamp": 1752422415.313048,
+      "datetime": "2025-07-13T18:00:15.313048",
+      "cpu": {
+        "cpu_percent": 6.9,
+        "cpu_count": 32,
+        "cpu_freq": {
+          "current": 4501.0,
+          "min": 0.0,
+          "max": 4501.0
+        }
+      },
+      "memory": {
+        "memory_total_gb": 63.14142608642578,
+        "memory_available_gb": 49.73088836669922,
+        "memory_used_gb": 13.410537719726562,
+        "memory_percent": 21.2
+      },
+      "disk": {
+        "disk_total_gb": 1906.9308586120605,
+        "disk_used_gb": 1229.6885414123535,
+        "disk_free_gb": 677.242317199707,
+        "disk_percent": 64.5
+      },
+      "network": {
+        "network_bytes_sent": 193676409,
+        "network_bytes_recv": 351541869
+      },
+      "gpu": {
+        "gpu_count": 1,
+        "gpu_memory_total_gb": 11.99951171875,
+        "gpu_memory_allocated_gb": 0.0,
+        "gpu_memory_reserved_gb": 0.0,
+        "gpu_memory_free_gb": 11.99951171875
+      },
+      "process": {
+        "process_cpu_percent": 0.0,
+        "process_memory_gb": 0.01009368896484375,
+        "process_memory_percent": 0.01598584256083773,
+        "process_threads": 7
+      }
+    },
+    {
+      "timestamp": 1752422416.4331558,
+      "datetime": "2025-07-13T18:00:16.433156",
+      "cpu": {
+        "cpu_percent": 3.4,
+        "cpu_count": 32,
+        "cpu_freq": {
+          "current": 4501.0,
+          "min": 0.0,
+          "max": 4501.0
+        }
+      },
+      "memory": {
+        "memory_total_gb": 63.14142608642578,
+        "memory_available_gb": 49.45831298828125,
+        "memory_used_gb": 13.683113098144531,
+        "memory_percent": 21.7
+      },
+      "disk": {
+        "disk_total_gb": 1906.9308586120605,
+        "disk_used_gb": 1229.6885414123535,
+        "disk_free_gb": 677.242317199707,
+        "disk_percent": 64.5
+      },
+      "network": {
+        "network_bytes_sent": 193679244,
+        "network_bytes_recv": 351547071
+      },
+      "gpu": {
+        "gpu_count": 1,
+        "gpu_memory_total_gb": 11.99951171875,
+        "gpu_memory_allocated_gb": 0.0,
+        "gpu_memory_reserved_gb": 0.0,
+        "gpu_memory_free_gb": 11.99951171875
+      },
+      "process": {
+        "process_cpu_percent": 0.0,
+        "process_memory_gb": 0.01009368896484375,
+        "process_memory_percent": 0.01598584256083773,
+        "process_threads": 7
+      }
+    },
+    {
+      "timestamp": 1752422417.5544732,
+      "datetime": "2025-07-13T18:00:17.554473",
+      "cpu": {
+        "cpu_percent": 5.9,
+        "cpu_count": 32,
+        "cpu_freq": {
+          "current": 4501.0,
+          "min": 0.0,
+          "max": 4501.0
+        }
+      },
+      "memory": {
+        "memory_total_gb": 63.14142608642578,
+        "memory_available_gb": 49.449703216552734,
+        "memory_used_gb": 13.691722869873047,
+        "memory_percent": 21.7
+      },
+      "disk": {
+        "disk_total_gb": 1906.9308586120605,
+        "disk_used_gb": 1229.6885414123535,
+        "disk_free_gb": 677.242317199707,
+        "disk_percent": 64.5
+      },
+      "network": {
+        "network_bytes_sent": 193681169,
+        "network_bytes_recv": 351548542
+      },
+      "gpu": {
+        "gpu_count": 1,
+        "gpu_memory_total_gb": 11.99951171875,
+        "gpu_memory_allocated_gb": 0.0,
+        "gpu_memory_reserved_gb": 0.0,
+        "gpu_memory_free_gb": 11.99951171875
+      },
+      "process": {
+        "process_cpu_percent": 0.0,
+        "process_memory_gb": 0.01009368896484375,
+        "process_memory_percent": 0.01598584256083773,
+        "process_threads": 7
+      }
+    },
+    {
+      "timestamp": 1752422418.6737561,
+      "datetime": "2025-07-13T18:00:18.673756",
+      "cpu": {
+        "cpu_percent": 5.3,
+        "cpu_count": 32,
+        "cpu_freq": {
+          "current": 4501.0,
+          "min": 0.0,
+          "max": 4501.0
+        }
+      },
+      "memory": {
+        "memory_total_gb": 63.14142608642578,
+        "memory_available_gb": 49.44818115234375,
+        "memory_used_gb": 13.693244934082031,
+        "memory_percent": 21.7
+      },
+      "disk": {
+        "disk_total_gb": 1906.9308586120605,
+        "disk_used_gb": 1229.6885414123535,
+        "disk_free_gb": 677.242317199707,
+        "disk_percent": 64.5
+      },
+      "network": {
+        "network_bytes_sent": 193683323,
+        "network_bytes_recv": 351554867
+      },
+      "gpu": {
+        "gpu_count": 1,
+        "gpu_memory_total_gb": 11.99951171875,
+        "gpu_memory_allocated_gb": 0.0,
+        "gpu_memory_reserved_gb": 0.0,
+        "gpu_memory_free_gb": 11.99951171875
+      },
+      "process": {
+        "process_cpu_percent": 0.0,
+        "process_memory_gb": 0.01009368896484375,
+        "process_memory_percent": 0.01598584256083773,
+        "process_threads": 7
+      }
+    },
+    {
+      "timestamp": 1752422419.7931232,
+      "datetime": "2025-07-13T18:00:19.793123",
+      "cpu": {
+        "cpu_percent": 4.5,
+        "cpu_count": 32,
+        "cpu_freq": {
+          "current": 4501.0,
+          "min": 0.0,
+          "max": 4501.0
+        }
+      },
+      "memory": {
+        "memory_total_gb": 63.14142608642578,
+        "memory_available_gb": 49.19797897338867,
+        "memory_used_gb": 13.94344711303711,
+        "memory_percent": 22.1
+      },
+      "disk": {
+        "disk_total_gb": 1906.9308586120605,
+        "disk_used_gb": 1229.659969329834,
+        "disk_free_gb": 677.2708892822266,
+        "disk_percent": 64.5
+      },
+      "network": {
+        "network_bytes_sent": 193688600,
+        "network_bytes_recv": 351560572
+      },
+      "gpu": {
+        "gpu_count": 1,
+        "gpu_memory_total_gb": 11.99951171875,
+        "gpu_memory_allocated_gb": 0.0,
+        "gpu_memory_reserved_gb": 0.0,
+        "gpu_memory_free_gb": 11.99951171875
+      },
+      "process": {
+        "process_cpu_percent": 0.0,
+        "process_memory_gb": 0.01009368896484375,
+        "process_memory_percent": 0.01598584256083773,
+        "process_threads": 7
+      }
+    },
+    {
+      "timestamp": 1752422420.912944,
+      "datetime": "2025-07-13T18:00:20.912944",
+      "cpu": {
+        "cpu_percent": 8.6,
+        "cpu_count": 32,
+        "cpu_freq": {
+          "current": 4501.0,
+          "min": 0.0,
+          "max": 4501.0
+        }
+      },
+      "memory": {
+        "memory_total_gb": 63.14142608642578,
+        "memory_available_gb": 49.198909759521484,
+        "memory_used_gb": 13.942516326904297,
+        "memory_percent": 22.1
+      },
+      "disk": {
+        "disk_total_gb": 1906.9308586120605,
+        "disk_used_gb": 1229.659969329834,
+        "disk_free_gb": 677.2708892822266,
+        "disk_percent": 64.5
+      },
+      "network": {
+        "network_bytes_sent": 193735985,
+        "network_bytes_recv": 351563147
+      },
+      "gpu": {
+        "gpu_count": 1,
+        "gpu_memory_total_gb": 11.99951171875,
+        "gpu_memory_allocated_gb": 0.0,
+        "gpu_memory_reserved_gb": 0.0,
+        "gpu_memory_free_gb": 11.99951171875
+      },
+      "process": {
+        "process_cpu_percent": 0.0,
+        "process_memory_gb": 0.01009368896484375,
+        "process_memory_percent": 0.01598584256083773,
+        "process_threads": 7
+      }
+    },
+    {
+      "timestamp": 1752422422.0335073,
+      "datetime": "2025-07-13T18:00:22.033507",
+      "cpu": {
+        "cpu_percent": 11.2,
+        "cpu_count": 32,
+        "cpu_freq": {
+          "current": 4501.0,
+          "min": 0.0,
+          "max": 4501.0
+        }
+      },
+      "memory": {
+        "memory_total_gb": 63.14142608642578,
+        "memory_available_gb": 49.1965217590332,
+        "memory_used_gb": 13.944904327392578,
+        "memory_percent": 22.1
+      },
+      "disk": {
+        "disk_total_gb": 1906.9308586120605,
+        "disk_used_gb": 1229.659969329834,
+        "disk_free_gb": 677.2708892822266,
+        "disk_percent": 64.5
+      },
+      "network": {
+        "network_bytes_sent": 193736039,
+        "network_bytes_recv": 351565821
+      },
+      "gpu": {
+        "gpu_count": 1,
+        "gpu_memory_total_gb": 11.99951171875,
+        "gpu_memory_allocated_gb": 0.0,
+        "gpu_memory_reserved_gb": 0.0,
+        "gpu_memory_free_gb": 11.99951171875
+      },
+      "process": {
+        "process_cpu_percent": 0.0,
+        "process_memory_gb": 0.01009368896484375,
+        "process_memory_percent": 0.01598584256083773,
+        "process_threads": 7
+      }
+    },
+    {
+      "timestamp": 1752422423.155778,
+      "datetime": "2025-07-13T18:00:23.155778",
+      "cpu": {
+        "cpu_percent": 5.8,
+        "cpu_count": 32,
+        "cpu_freq": {
+          "current": 4501.0,
+          "min": 0.0,
+          "max": 4501.0
+        }
+      },
+      "memory": {
+        "memory_total_gb": 63.14142608642578,
+        "memory_available_gb": 49.20535659790039,
+        "memory_used_gb": 13.93606948852539,
+        "memory_percent": 22.1
+      },
+      "disk": {
+        "disk_total_gb": 1906.9308586120605,
+        "disk_used_gb": 1229.659969329834,
+        "disk_free_gb": 677.2708892822266,
+        "disk_percent": 64.5
+      },
+      "network": {
+        "network_bytes_sent": 193741798,
+        "network_bytes_recv": 351568500
+      },
+      "gpu": {
+        "gpu_count": 1,
+        "gpu_memory_total_gb": 11.99951171875,
+        "gpu_memory_allocated_gb": 0.0,
+        "gpu_memory_reserved_gb": 0.0,
+        "gpu_memory_free_gb": 11.99951171875
+      },
+      "process": {
+        "process_cpu_percent": 0.0,
+        "process_memory_gb": 0.01009368896484375,
+        "process_memory_percent": 0.01598584256083773,
+        "process_threads": 7
+      }
+    },
+    {
+      "timestamp": 1752422424.275309,
+      "datetime": "2025-07-13T18:00:24.275309",
+      "cpu": {
+        "cpu_percent": 6.5,
+        "cpu_count": 32,
+        "cpu_freq": {
+          "current": 4501.0,
+          "min": 0.0,
+          "max": 4501.0
+        }
+      },
+      "memory": {
+        "memory_total_gb": 63.14142608642578,
+        "memory_available_gb": 49.20166015625,
+        "memory_used_gb": 13.939765930175781,
+        "memory_percent": 22.1
+      },
+      "disk": {
+        "disk_total_gb": 1906.9308586120605,
+        "disk_used_gb": 1229.659969329834,
+        "disk_free_gb": 677.2708892822266,
+        "disk_percent": 64.5
+      },
+      "network": {
+        "network_bytes_sent": 193742161,
+        "network_bytes_recv": 351569955
+      },
+      "gpu": {
+        "gpu_count": 1,
+        "gpu_memory_total_gb": 11.99951171875,
+        "gpu_memory_allocated_gb": 0.0,
+        "gpu_memory_reserved_gb": 0.0,
+        "gpu_memory_free_gb": 11.99951171875
+      },
+      "process": {
+        "process_cpu_percent": 0.0,
+        "process_memory_gb": 0.01009368896484375,
+        "process_memory_percent": 0.01598584256083773,
+        "process_threads": 7
+      }
+    },
+    {
+      "timestamp": 1752422425.3953385,
+      "datetime": "2025-07-13T18:00:25.395339",
+      "cpu": {
+        "cpu_percent": 5.2,
+        "cpu_count": 32,
+        "cpu_freq": {
+          "current": 4501.0,
+          "min": 0.0,
+          "max": 4501.0
+        }
+      },
+      "memory": {
+        "memory_total_gb": 63.14142608642578,
+        "memory_available_gb": 49.20481872558594,
+        "memory_used_gb": 13.936607360839844,
+        "memory_percent": 22.1
+      },
+      "disk": {
+        "disk_total_gb": 1906.9308586120605,
+        "disk_used_gb": 1229.659969329834,
+        "disk_free_gb": 677.2708892822266,
+        "disk_percent": 64.5
+      },
+      "network": {
+        "network_bytes_sent": 193742803,
+        "network_bytes_recv": 351570268
+      },
+      "gpu": {
+        "gpu_count": 1,
+        "gpu_memory_total_gb": 11.99951171875,
+        "gpu_memory_allocated_gb": 0.0,
+        "gpu_memory_reserved_gb": 0.0,
+        "gpu_memory_free_gb": 11.99951171875
+      },
+      "process": {
+        "process_cpu_percent": 0.0,
+        "process_memory_gb": 0.01009368896484375,
+        "process_memory_percent": 0.01598584256083773,
+        "process_threads": 7
+      }
+    },
+    {
+      "timestamp": 1752422426.5172875,
+      "datetime": "2025-07-13T18:00:26.517287",
+      "cpu": {
+        "cpu_percent": 8.4,
+        "cpu_count": 32,
+        "cpu_freq": {
+          "current": 4501.0,
+          "min": 0.0,
+          "max": 4501.0
+        }
+      },
+      "memory": {
+        "memory_total_gb": 63.14142608642578,
+        "memory_available_gb": 49.19120407104492,
+        "memory_used_gb": 13.95022201538086,
+        "memory_percent": 22.1
+      },
+      "disk": {
+        "disk_total_gb": 1906.9308586120605,
+        "disk_used_gb": 1229.6600914001465,
+        "disk_free_gb": 677.2707672119141,
+        "disk_percent": 64.5
+      },
+      "network": {
+        "network_bytes_sent": 193743037,
+        "network_bytes_recv": 351570700
+      },
+      "gpu": {
+        "gpu_count": 1,
+        "gpu_memory_total_gb": 11.99951171875,
+        "gpu_memory_allocated_gb": 0.0,
+        "gpu_memory_reserved_gb": 0.0,
+        "gpu_memory_free_gb": 11.99951171875
+      },
+      "process": {
+        "process_cpu_percent": 0.0,
+        "process_memory_gb": 0.01009368896484375,
+        "process_memory_percent": 0.01598584256083773,
+        "process_threads": 7
+      }
+    },
+    {
+      "timestamp": 1752422427.6371298,
+      "datetime": "2025-07-13T18:00:27.637130",
+      "cpu": {
+        "cpu_percent": 6.2,
+        "cpu_count": 32,
+        "cpu_freq": {
+          "current": 4501.0,
+          "min": 0.0,
+          "max": 4501.0
+        }
+      },
+      "memory": {
+        "memory_total_gb": 63.14142608642578,
+        "memory_available_gb": 49.19716262817383,
+        "memory_used_gb": 13.944263458251953,
+        "memory_percent": 22.1
+      },
+      "disk": {
+        "disk_total_gb": 1906.9308586120605,
+        "disk_used_gb": 1229.6600914001465,
+        "disk_free_gb": 677.2707672119141,
+        "disk_percent": 64.5
+      },
+      "network": {
+        "network_bytes_sent": 193750313,
+        "network_bytes_recv": 351577036
+      },
+      "gpu": {
+        "gpu_count": 1,
+        "gpu_memory_total_gb": 11.99951171875,
+        "gpu_memory_allocated_gb": 0.0,
+        "gpu_memory_reserved_gb": 0.0,
+        "gpu_memory_free_gb": 11.99951171875
+      },
+      "process": {
+        "process_cpu_percent": 0.0,
+        "process_memory_gb": 0.01009368896484375,
+        "process_memory_percent": 0.01598584256083773,
+        "process_threads": 7
+      }
+    },
+    {
+      "timestamp": 1752422428.7672439,
+      "datetime": "2025-07-13T18:00:28.767244",
+      "cpu": {
+        "cpu_percent": 6.9,
+        "cpu_count": 32,
+        "cpu_freq": {
+          "current": 4501.0,
+          "min": 0.0,
+          "max": 4501.0
+        }
+      },
+      "memory": {
+        "memory_total_gb": 63.14142608642578,
+        "memory_available_gb": 49.19255447387695,
+        "memory_used_gb": 13.948871612548828,
+        "memory_percent": 22.1
+      },
+      "disk": {
+        "disk_total_gb": 1906.9308586120605,
+        "disk_used_gb": 1229.6600914001465,
+        "disk_free_gb": 677.2707672119141,
+        "disk_percent": 64.5
+      },
+      "network": {
+        "network_bytes_sent": 193751689,
+        "network_bytes_recv": 351582665
+      },
+      "gpu": {
+        "gpu_count": 1,
+        "gpu_memory_total_gb": 11.99951171875,
+        "gpu_memory_allocated_gb": 0.0,
+        "gpu_memory_reserved_gb": 0.0,
+        "gpu_memory_free_gb": 11.99951171875
+      },
+      "process": {
+        "process_cpu_percent": 0.0,
+        "process_memory_gb": 0.01009368896484375,
+        "process_memory_percent": 0.01598584256083773,
+        "process_threads": 7
+      }
+    },
+    {
+      "timestamp": 1752422429.8866591,
+      "datetime": "2025-07-13T18:00:29.886659",
+      "cpu": {
+        "cpu_percent": 5.0,
+        "cpu_count": 32,
+        "cpu_freq": {
+          "current": 4501.0,
+          "min": 0.0,
+          "max": 4501.0
+        }
+      },
+      "memory": {
+        "memory_total_gb": 63.14142608642578,
+        "memory_available_gb": 49.18637466430664,
+        "memory_used_gb": 13.95505142211914,
+        "memory_percent": 22.1
+      },
+      "disk": {
+        "disk_total_gb": 1906.9308586120605,
+        "disk_used_gb": 1229.6600914001465,
+        "disk_free_gb": 677.2707672119141,
+        "disk_percent": 64.5
+      },
+      "network": {
+        "network_bytes_sent": 193753726,
+        "network_bytes_recv": 351584045
+      },
+      "gpu": {
+        "gpu_count": 1,
+        "gpu_memory_total_gb": 11.99951171875,
+        "gpu_memory_allocated_gb": 0.0,
+        "gpu_memory_reserved_gb": 0.0,
+        "gpu_memory_free_gb": 11.99951171875
+      },
+      "process": {
+        "process_cpu_percent": 0.0,
+        "process_memory_gb": 0.01009368896484375,
+        "process_memory_percent": 0.01598584256083773,
+        "process_threads": 7
+      }
+    },
+    {
+      "timestamp": 1752422431.0106962,
+      "datetime": "2025-07-13T18:00:31.010696",
+      "cpu": {
+        "cpu_percent": 4.8,
+        "cpu_count": 32,
+        "cpu_freq": {
+          "current": 4501.0,
+          "min": 0.0,
+          "max": 4501.0
+        }
+      },
+      "memory": {
+        "memory_total_gb": 63.14142608642578,
+        "memory_available_gb": 49.183937072753906,
+        "memory_used_gb": 13.957489013671875,
+        "memory_percent": 22.1
+      },
+      "disk": {
+        "disk_total_gb": 1906.9308586120605,
+        "disk_used_gb": 1229.6600914001465,
+        "disk_free_gb": 677.2707672119141,
+        "disk_percent": 64.5
+      },
+      "network": {
+        "network_bytes_sent": 193761068,
+        "network_bytes_recv": 351594248
+      },
+      "gpu": {
+        "gpu_count": 1,
+        "gpu_memory_total_gb": 11.99951171875,
+        "gpu_memory_allocated_gb": 0.0,
+        "gpu_memory_reserved_gb": 0.0,
+        "gpu_memory_free_gb": 11.99951171875
+      },
+      "process": {
+        "process_cpu_percent": 0.0,
+        "process_memory_gb": 0.01009368896484375,
+        "process_memory_percent": 0.01598584256083773,
+        "process_threads": 7
+      }
+    },
+    {
+      "timestamp": 1752422432.1305454,
+      "datetime": "2025-07-13T18:00:32.130545",
+      "cpu": {
+        "cpu_percent": 6.5,
+        "cpu_count": 32,
+        "cpu_freq": {
+          "current": 4501.0,
+          "min": 0.0,
+          "max": 4501.0
+        }
+      },
+      "memory": {
+        "memory_total_gb": 63.14142608642578,
+        "memory_available_gb": 49.184268951416016,
+        "memory_used_gb": 13.957157135009766,
+        "memory_percent": 22.1
+      },
+      "disk": {
+        "disk_total_gb": 1906.9308586120605,
+        "disk_used_gb": 1229.6600914001465,
+        "disk_free_gb": 677.2707672119141,
+        "disk_percent": 64.5
+      },
+      "network": {
+        "network_bytes_sent": 193767445,
+        "network_bytes_recv": 351598930
+      },
+      "gpu": {
+        "gpu_count": 1,
+        "gpu_memory_total_gb": 11.99951171875,
+        "gpu_memory_allocated_gb": 0.0,
+        "gpu_memory_reserved_gb": 0.0,
+        "gpu_memory_free_gb": 11.99951171875
+      },
+      "process": {
+        "process_cpu_percent": 0.0,
+        "process_memory_gb": 0.01009368896484375,
+        "process_memory_percent": 0.01598584256083773,
+        "process_threads": 7
+      }
+    },
+    {
+      "timestamp": 1752422433.2544973,
+      "datetime": "2025-07-13T18:00:33.254497",
+      "cpu": {
+        "cpu_percent": 8.2,
+        "cpu_count": 32,
+        "cpu_freq": {
+          "current": 4501.0,
+          "min": 0.0,
+          "max": 4501.0
+        }
+      },
+      "memory": {
+        "memory_total_gb": 63.14142608642578,
+        "memory_available_gb": 49.17873764038086,
+        "memory_used_gb": 13.962688446044922,
+        "memory_percent": 22.1
+      },
+      "disk": {
+        "disk_total_gb": 1906.9308586120605,
+        "disk_used_gb": 1229.6600914001465,
+        "disk_free_gb": 677.2707672119141,
+        "disk_percent": 64.5
+      },
+      "network": {
+        "network_bytes_sent": 193769139,
+        "network_bytes_recv": 351604128
+      },
+      "gpu": {
+        "gpu_count": 1,
+        "gpu_memory_total_gb": 11.99951171875,
+        "gpu_memory_allocated_gb": 0.0,
+        "gpu_memory_reserved_gb": 0.0,
+        "gpu_memory_free_gb": 11.99951171875
+      },
+      "process": {
+        "process_cpu_percent": 0.0,
+        "process_memory_gb": 0.01009368896484375,
+        "process_memory_percent": 0.01598584256083773,
+        "process_threads": 7
+      }
+    },
+    {
+      "timestamp": 1752422434.3772764,
+      "datetime": "2025-07-13T18:00:34.377276",
+      "cpu": {
+        "cpu_percent": 6.9,
+        "cpu_count": 32,
+        "cpu_freq": {
+          "current": 4501.0,
+          "min": 0.0,
+          "max": 4501.0
+        }
+      },
+      "memory": {
+        "memory_total_gb": 63.14142608642578,
+        "memory_available_gb": 49.18274688720703,
+        "memory_used_gb": 13.95867919921875,
+        "memory_percent": 22.1
+      },
+      "disk": {
+        "disk_total_gb": 1906.9308586120605,
+        "disk_used_gb": 1229.6600914001465,
+        "disk_free_gb": 677.2707672119141,
+        "disk_percent": 64.5
+      },
+      "network": {
+        "network_bytes_sent": 193770052,
+        "network_bytes_recv": 351604626
+      },
+      "gpu": {
+        "gpu_count": 1,
+        "gpu_memory_total_gb": 11.99951171875,
+        "gpu_memory_allocated_gb": 0.0,
+        "gpu_memory_reserved_gb": 0.0,
+        "gpu_memory_free_gb": 11.99951171875
+      },
+      "process": {
+        "process_cpu_percent": 0.0,
+        "process_memory_gb": 0.01009368896484375,
+        "process_memory_percent": 0.01598584256083773,
+        "process_threads": 7
+      }
+    },
+    {
+      "timestamp": 1752422435.4958181,
+      "datetime": "2025-07-13T18:00:35.495818",
+      "cpu": {
+        "cpu_percent": 3.0,
+        "cpu_count": 32,
+        "cpu_freq": {
+          "current": 4501.0,
+          "min": 0.0,
+          "max": 4501.0
+        }
+      },
+      "memory": {
+        "memory_total_gb": 63.14142608642578,
+        "memory_available_gb": 49.18202590942383,
+        "memory_used_gb": 13.959400177001953,
+        "memory_percent": 22.1
+      },
+      "disk": {
+        "disk_total_gb": 1906.9308586120605,
+        "disk_used_gb": 1229.6600914001465,
+        "disk_free_gb": 677.2707672119141,
+        "disk_percent": 64.5
+      },
+      "network": {
+        "network_bytes_sent": 193777397,
+        "network_bytes_recv": 351607030
+      },
+      "gpu": {
+        "gpu_count": 1,
+        "gpu_memory_total_gb": 11.99951171875,
+        "gpu_memory_allocated_gb": 0.0,
+        "gpu_memory_reserved_gb": 0.0,
+        "gpu_memory_free_gb": 11.99951171875
+      },
+      "process": {
+        "process_cpu_percent": 0.0,
+        "process_memory_gb": 0.01009368896484375,
+        "process_memory_percent": 0.01598584256083773,
+        "process_threads": 7
+      }
+    },
+    {
+      "timestamp": 1752422436.6162157,
+      "datetime": "2025-07-13T18:00:36.616216",
+      "cpu": {
+        "cpu_percent": 7.5,
+        "cpu_count": 32,
+        "cpu_freq": {
+          "current": 4501.0,
+          "min": 0.0,
+          "max": 4501.0
+        }
+      },
+      "memory": {
+        "memory_total_gb": 63.14142608642578,
+        "memory_available_gb": 49.17915344238281,
+        "memory_used_gb": 13.962272644042969,
+        "memory_percent": 22.1
+      },
+      "disk": {
+        "disk_total_gb": 1906.9308586120605,
+        "disk_used_gb": 1229.6600914001465,
+        "disk_free_gb": 677.2707672119141,
+        "disk_percent": 64.5
+      },
+      "network": {
+        "network_bytes_sent": 193777463,
+        "network_bytes_recv": 351607190
+      },
+      "gpu": {
+        "gpu_count": 1,
+        "gpu_memory_total_gb": 11.99951171875,
+        "gpu_memory_allocated_gb": 0.0,
+        "gpu_memory_reserved_gb": 0.0,
+        "gpu_memory_free_gb": 11.99951171875
+      },
+      "process": {
+        "process_cpu_percent": 0.0,
+        "process_memory_gb": 0.01009368896484375,
+        "process_memory_percent": 0.01598584256083773,
+        "process_threads": 7
+      }
+    },
+    {
+      "timestamp": 1752422437.7359562,
+      "datetime": "2025-07-13T18:00:37.735956",
+      "cpu": {
+        "cpu_percent": 6.2,
+        "cpu_count": 32,
+        "cpu_freq": {
+          "current": 4501.0,
+          "min": 0.0,
+          "max": 4501.0
+        }
+      },
+      "memory": {
+        "memory_total_gb": 63.14142608642578,
+        "memory_available_gb": 49.18254089355469,
+        "memory_used_gb": 13.958885192871094,
+        "memory_percent": 22.1
+      },
+      "disk": {
+        "disk_total_gb": 1906.9308586120605,
+        "disk_used_gb": 1229.6600914001465,
+        "disk_free_gb": 677.2707672119141,
+        "disk_percent": 64.5
+      },
+      "network": {
+        "network_bytes_sent": 193784140,
+        "network_bytes_recv": 351612342
+      },
+      "gpu": {
+        "gpu_count": 1,
+        "gpu_memory_total_gb": 11.99951171875,
+        "gpu_memory_allocated_gb": 0.0,
+        "gpu_memory_reserved_gb": 0.0,
+        "gpu_memory_free_gb": 11.99951171875
+      },
+      "process": {
+        "process_cpu_percent": 0.0,
+        "process_memory_gb": 0.01009368896484375,
+        "process_memory_percent": 0.01598584256083773,
+        "process_threads": 7
+      }
+    },
+    {
+      "timestamp": 1752422438.8556821,
+      "datetime": "2025-07-13T18:00:38.855682",
+      "cpu": {
+        "cpu_percent": 10.5,
+        "cpu_count": 32,
+        "cpu_freq": {
+          "current": 4501.0,
+          "min": 0.0,
+          "max": 4501.0
+        }
+      },
+      "memory": {
+        "memory_total_gb": 63.14142608642578,
+        "memory_available_gb": 49.18251419067383,
+        "memory_used_gb": 13.958911895751953,
+        "memory_percent": 22.1
+      },
+      "disk": {
+        "disk_total_gb": 1906.9308586120605,
+        "disk_used_gb": 1229.6600914001465,
+        "disk_free_gb": 677.2707672119141,
+        "disk_percent": 64.5
+      },
+      "network": {
+        "network_bytes_sent": 193784380,
+        "network_bytes_recv": 351613458
+      },
+      "gpu": {
+        "gpu_count": 1,
+        "gpu_memory_total_gb": 11.99951171875,
+        "gpu_memory_allocated_gb": 0.0,
+        "gpu_memory_reserved_gb": 0.0,
+        "gpu_memory_free_gb": 11.99951171875
+      },
+      "process": {
+        "process_cpu_percent": 0.0,
+        "process_memory_gb": 0.01009368896484375,
+        "process_memory_percent": 0.01598584256083773,
+        "process_threads": 7
+      }
+    },
+    {
+      "timestamp": 1752422439.9756327,
+      "datetime": "2025-07-13T18:00:39.975633",
+      "cpu": {
+        "cpu_percent": 5.8,
+        "cpu_count": 32,
+        "cpu_freq": {
+          "current": 4501.0,
+          "min": 0.0,
+          "max": 4501.0
+        }
+      },
+      "memory": {
+        "memory_total_gb": 63.14142608642578,
+        "memory_available_gb": 49.18442916870117,
+        "memory_used_gb": 13.95699691772461,
+        "memory_percent": 22.1
+      },
+      "disk": {
+        "disk_total_gb": 1906.9308586120605,
+        "disk_used_gb": 1229.6600914001465,
+        "disk_free_gb": 677.2707672119141,
+        "disk_percent": 64.5
+      },
+      "network": {
+        "network_bytes_sent": 193784967,
+        "network_bytes_recv": 351613850
+      },
+      "gpu": {
+        "gpu_count": 1,
+        "gpu_memory_total_gb": 11.99951171875,
+        "gpu_memory_allocated_gb": 0.0,
+        "gpu_memory_reserved_gb": 0.0,
+        "gpu_memory_free_gb": 11.99951171875
+      },
+      "process": {
+        "process_cpu_percent": 0.0,
+        "process_memory_gb": 0.01009368896484375,
+        "process_memory_percent": 0.01598584256083773,
+        "process_threads": 7
+      }
+    },
+    {
+      "timestamp": 1752422441.1007054,
+      "datetime": "2025-07-13T18:00:41.100705",
+      "cpu": {
+        "cpu_percent": 6.2,
+        "cpu_count": 32,
+        "cpu_freq": {
+          "current": 4501.0,
+          "min": 0.0,
+          "max": 4501.0
+        }
+      },
+      "memory": {
+        "memory_total_gb": 63.14142608642578,
+        "memory_available_gb": 49.183860778808594,
+        "memory_used_gb": 13.957565307617188,
+        "memory_percent": 22.1
+      },
+      "disk": {
+        "disk_total_gb": 1906.9308586120605,
+        "disk_used_gb": 1229.6600914001465,
+        "disk_free_gb": 677.2707672119141,
+        "disk_percent": 64.5
+      },
+      "network": {
+        "network_bytes_sent": 193785177,
+        "network_bytes_recv": 351614336
+      },
+      "gpu": {
+        "gpu_count": 1,
+        "gpu_memory_total_gb": 11.99951171875,
+        "gpu_memory_allocated_gb": 0.0,
+        "gpu_memory_reserved_gb": 0.0,
+        "gpu_memory_free_gb": 11.99951171875
+      },
+      "process": {
+        "process_cpu_percent": 0.0,
+        "process_memory_gb": 0.01009368896484375,
+        "process_memory_percent": 0.01598584256083773,
+        "process_threads": 7
+      }
+    },
+    {
+      "timestamp": 1752422442.220186,
+      "datetime": "2025-07-13T18:00:42.220186",
+      "cpu": {
+        "cpu_percent": 9.9,
+        "cpu_count": 32,
+        "cpu_freq": {
+          "current": 4501.0,
+          "min": 0.0,
+          "max": 4501.0
+        }
+      },
+      "memory": {
+        "memory_total_gb": 63.14142608642578,
+        "memory_available_gb": 49.17726135253906,
+        "memory_used_gb": 13.964164733886719,
+        "memory_percent": 22.1
+      },
+      "disk": {
+        "disk_total_gb": 1906.9308586120605,
+        "disk_used_gb": 1229.6600914001465,
+        "disk_free_gb": 677.2707672119141,
+        "disk_percent": 64.5
+      },
+      "network": {
+        "network_bytes_sent": 193785322,
+        "network_bytes_recv": 351614402
+      },
+      "gpu": {
+        "gpu_count": 1,
+        "gpu_memory_total_gb": 11.99951171875,
+        "gpu_memory_allocated_gb": 0.0,
+        "gpu_memory_reserved_gb": 0.0,
+        "gpu_memory_free_gb": 11.99951171875
+      },
+      "process": {
+        "process_cpu_percent": 0.0,
+        "process_memory_gb": 0.01009368896484375,
+        "process_memory_percent": 0.01598584256083773,
+        "process_threads": 7
+      }
+    },
+    {
+      "timestamp": 1752422443.3401895,
+      "datetime": "2025-07-13T18:00:43.340189",
+      "cpu": {
+        "cpu_percent": 6.2,
+        "cpu_count": 32,
+        "cpu_freq": {
+          "current": 4501.0,
+          "min": 0.0,
+          "max": 4501.0
+        }
+      },
+      "memory": {
+        "memory_total_gb": 63.14142608642578,
+        "memory_available_gb": 49.2008056640625,
+        "memory_used_gb": 13.940620422363281,
+        "memory_percent": 22.1
+      },
+      "disk": {
+        "disk_total_gb": 1906.9308586120605,
+        "disk_used_gb": 1229.6600914001465,
+        "disk_free_gb": 677.2707672119141,
+        "disk_percent": 64.5
+      },
+      "network": {
+        "network_bytes_sent": 193785322,
+        "network_bytes_recv": 351614402
+      },
+      "gpu": {
+        "gpu_count": 1,
+        "gpu_memory_total_gb": 11.99951171875,
+        "gpu_memory_allocated_gb": 0.0,
+        "gpu_memory_reserved_gb": 0.0,
+        "gpu_memory_free_gb": 11.99951171875
+      },
+      "process": {
+        "process_cpu_percent": 0.0,
+        "process_memory_gb": 0.010040283203125,
+        "process_memory_percent": 0.01590126138326716,
+        "process_threads": 4
+      }
+    },
+    {
+      "timestamp": 1752422444.4695337,
+      "datetime": "2025-07-13T18:00:44.469534",
+      "cpu": {
+        "cpu_percent": 5.3,
+        "cpu_count": 32,
+        "cpu_freq": {
+          "current": 4501.0,
+          "min": 0.0,
+          "max": 4501.0
+        }
+      },
+      "memory": {
+        "memory_total_gb": 63.14142608642578,
+        "memory_available_gb": 49.201683044433594,
+        "memory_used_gb": 13.939743041992188,
+        "memory_percent": 22.1
+      },
+      "disk": {
+        "disk_total_gb": 1906.9308586120605,
+        "disk_used_gb": 1229.6600914001465,
+        "disk_free_gb": 677.2707672119141,
+        "disk_percent": 64.5
+      },
+      "network": {
+        "network_bytes_sent": 193785376,
+        "network_bytes_recv": 351614402
+      },
+      "gpu": {
+        "gpu_count": 1,
+        "gpu_memory_total_gb": 11.99951171875,
+        "gpu_memory_allocated_gb": 0.0,
+        "gpu_memory_reserved_gb": 0.0,
+        "gpu_memory_free_gb": 11.99951171875
+      },
+      "process": {
+        "process_cpu_percent": 0.0,
+        "process_memory_gb": 0.010040283203125,
+        "process_memory_percent": 0.01590126138326716,
+        "process_threads": 4
+      }
+    },
+    {
+      "timestamp": 1752422445.5896566,
+      "datetime": "2025-07-13T18:00:45.589657",
+      "cpu": {
+        "cpu_percent": 7.5,
+        "cpu_count": 32,
+        "cpu_freq": {
+          "current": 4501.0,
+          "min": 0.0,
+          "max": 4501.0
+        }
+      },
+      "memory": {
+        "memory_total_gb": 63.14142608642578,
+        "memory_available_gb": 49.203369140625,
+        "memory_used_gb": 13.938056945800781,
+        "memory_percent": 22.1
+      },
+      "disk": {
+        "disk_total_gb": 1906.9308586120605,
+        "disk_used_gb": 1229.6600914001465,
+        "disk_free_gb": 677.2707672119141,
+        "disk_percent": 64.5
+      },
+      "network": {
+        "network_bytes_sent": 193786071,
+        "network_bytes_recv": 351614779
+      },
+      "gpu": {
+        "gpu_count": 1,
+        "gpu_memory_total_gb": 11.99951171875,
+        "gpu_memory_allocated_gb": 0.0,
+        "gpu_memory_reserved_gb": 0.0,
+        "gpu_memory_free_gb": 11.99951171875
+      },
+      "process": {
+        "process_cpu_percent": 0.0,
+        "process_memory_gb": 0.010040283203125,
+        "process_memory_percent": 0.01590126138326716,
+        "process_threads": 4
+      }
+    },
+    {
+      "timestamp": 1752422446.7144148,
+      "datetime": "2025-07-13T18:00:46.714415",
+      "cpu": {
+        "cpu_percent": 5.4,
+        "cpu_count": 32,
+        "cpu_freq": {
+          "current": 4501.0,
+          "min": 0.0,
+          "max": 4501.0
+        }
+      },
+      "memory": {
+        "memory_total_gb": 63.14142608642578,
+        "memory_available_gb": 49.20594024658203,
+        "memory_used_gb": 13.93548583984375,
+        "memory_percent": 22.1
+      },
+      "disk": {
+        "disk_total_gb": 1906.9308586120605,
+        "disk_used_gb": 1229.6600914001465,
+        "disk_free_gb": 677.2707672119141,
+        "disk_percent": 64.5
+      },
+      "network": {
+        "network_bytes_sent": 193786305,
+        "network_bytes_recv": 351614779
+      },
+      "gpu": {
+        "gpu_count": 1,
+        "gpu_memory_total_gb": 11.99951171875,
+        "gpu_memory_allocated_gb": 0.0,
+        "gpu_memory_reserved_gb": 0.0,
+        "gpu_memory_free_gb": 11.99951171875
+      },
+      "process": {
+        "process_cpu_percent": 0.0,
+        "process_memory_gb": 0.010040283203125,
+        "process_memory_percent": 0.01590126138326716,
+        "process_threads": 4
+      }
+    },
+    {
+      "timestamp": 1752422447.8345678,
+      "datetime": "2025-07-13T18:00:47.834568",
+      "cpu": {
+        "cpu_percent": 4.3,
+        "cpu_count": 32,
+        "cpu_freq": {
+          "current": 4501.0,
+          "min": 0.0,
+          "max": 4501.0
+        }
+      },
+      "memory": {
+        "memory_total_gb": 63.14142608642578,
+        "memory_available_gb": 50.144752502441406,
+        "memory_used_gb": 12.996673583984375,
+        "memory_percent": 20.6
+      },
+      "disk": {
+        "disk_total_gb": 1906.9308586120605,
+        "disk_used_gb": 1229.6600952148438,
+        "disk_free_gb": 677.2707633972168,
+        "disk_percent": 64.5
+      },
+      "network": {
+        "network_bytes_sent": 193786305,
+        "network_bytes_recv": 351614779
+      },
+      "gpu": {
+        "gpu_count": 1,
+        "gpu_memory_total_gb": 11.99951171875,
+        "gpu_memory_allocated_gb": 0.0,
+        "gpu_memory_reserved_gb": 0.0,
+        "gpu_memory_free_gb": 11.99951171875
+      },
+      "process": {
+        "error": "Process not found"
+      }
+    }
+  ]
+}

@@ -1,11 +1,13 @@
 import torch
 import numpy as np
+import matplotlib.pyplot as plt
 import time
 import collections
 import os
 import traceback  # For logging exceptions
 from pathlib import Path
 from typing import Dict, Any, Optional, Tuple
+from datetime import datetime
 
 from SAPSO_AGENT.SAPSO.RL.ActorCritic.Agent import SACAgent
 from SAPSO_AGENT.SAPSO.Environment.Environment import Environment
@@ -23,6 +25,25 @@ from SAPSO_AGENT.SAPSO.Graphics.graphing import (
 from SAPSO_AGENT.Logs.logger import *
 from SAPSO_AGENT.SAPSO.PSO.ObjectiveFunctions.Testing.Loader import test_objective_function_classes
 from SAPSO_AGENT.CONFIG import *
+
+# Import the new SAPSO plotting functionality
+from SAPSO_AGENT.SAPSO.Graphics.sapso_plotting import SAPSOPlotter
+from SAPSO_AGENT.CONFIG import PLOT_ONLY_AVERAGES
+
+
+def generate_timestamped_filename(base_name: str, extension: str = "png") -> str:
+    """
+    Generate a filename with timestamp and base name.
+    
+    Args:
+        base_name: The base name for the file
+        extension: File extension (default: "png")
+    
+    Returns:
+        str: Timestamped filename in format "YYYYMMDD_HHMMSS_base_name.extension"
+    """
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    return f"{timestamp}_{base_name}.{extension}"
 
 # --- Main Testing Function (Accepts Arguments) ---
 def test_agent(
@@ -68,8 +89,12 @@ def test_agent(
         checkpoint_base_dir = project_root_fallback / "SAPSO" / "checkpoints"
         log_warning(f"checkpoint_base_dir not provided, using default: {checkpoint_base_dir}", module_name)
 
+    # Add 'test' subdirectory for all test outputs
+    test_output_dir = Path(checkpoint_base_dir) / "test"
+    os.makedirs(test_output_dir, exist_ok=True)
+
     mode_suffix = "adaptive_nt" if adaptive_nt_mode else f"fixed_nt{agent_step_size}"
-    checkpoint_dir = Path(checkpoint_base_dir) / f"checkpoints_sapso_vectorized_{mode_suffix}"
+    checkpoint_dir = test_output_dir / f"checkpoints_sapso_vectorized_{mode_suffix}"
     
     # Generate model filename based on CONFIG settings
     version_suffix = MODEL_VERSION_SUFFIX if MODEL_VERSION_SUFFIX else ""
@@ -176,6 +201,10 @@ def test_agent(
     final_gbests_all_runs = []
     eval_start_time = time.time()
     current_run_id = 0  # Track run ID for metrics
+    
+    # --- Metrics Collection for Plotting ---
+    metrics_collector = None  # Will be initialized with the first environment's metrics calculator
+    accumulated_metrics = {}  # Store metrics data across all evaluation runs
 
     # --- Evaluation Loop ---
     for func_index, func_class in enumerate(test_objective_function_classes):
@@ -204,7 +233,14 @@ def test_agent(
                     convergence_patience=convergence_patience,
                     convergence_threshold_gbest=convergence_threshold_gbest,
                     convergence_threshold_pbest_std=convergence_threshold_pbest_std,
+                    run_id=current_run_id
                 )
+                
+                # Initialize metrics collector with the first environment's metrics calculator
+                if metrics_collector is None and hasattr(eval_env, 'pso') and hasattr(eval_env.pso, 'metrics_calculator'):
+                    metrics_collector = eval_env.pso.metrics_calculator
+                    log_info("Initialized metrics collector for plotting", module_name)
+                
                 # TODO eval seed effects
                 # state, _ = eval_env.reset(seed=1000 + func_index * num_eval_runs + run)
                 state, _ = eval_env.reset()
@@ -292,6 +328,68 @@ def test_agent(
                 last_gbest_this_func.append(final_gbest_for_log)
 
             log_debug(f"  Finished Run {run + 1}/{num_eval_runs}. Reward: {run_reward:.4f}, Final GBest: {final_gbest_for_log:.6e}", module_name)
+            
+            # Store metrics data from this evaluation run for plotting
+            if eval_env and hasattr(eval_env, 'pso') and hasattr(eval_env.pso, 'metrics_calculator'):
+                episode_metrics = eval_env.pso.metrics_calculator
+                if episode_metrics is not None and hasattr(episode_metrics, 'metric_tracking') and episode_metrics.metric_tracking:
+                    # Accumulate metrics data
+                    for func_name, data in episode_metrics.metric_tracking.items():
+                        if func_name not in accumulated_metrics:
+                            accumulated_metrics[func_name] = data
+                        else:
+                            # Merge data from multiple episodes
+                            for metric_name, values in data.items():
+                                if metric_name in accumulated_metrics[func_name]:
+                                    existing = accumulated_metrics[func_name][metric_name]
+                                    if isinstance(existing, list) and isinstance(values, list):
+                                        existing.extend(values)
+                                    elif isinstance(existing, dict) and isinstance(values, dict):
+                                        for k, v in values.items():
+                                            if k in existing and isinstance(existing[k], list) and isinstance(v, list):
+                                                existing[k].extend(v)
+                                            elif k in existing and isinstance(existing[k], dict) and isinstance(v, dict):
+                                                for k2, v2 in v.items():
+                                                    if k2 in existing[k] and isinstance(existing[k][k2], list) and isinstance(v2, list):
+                                                        existing[k][k2].extend(v2)
+                                                    else:
+                                                        existing[k][k2] = v2
+                                                else:
+                                                    existing[k] = v
+                                        else:
+                                            accumulated_metrics[func_name][metric_name] = values
+                                    else:
+                                        accumulated_metrics[func_name][metric_name] = values.copy() if isinstance(values, list) else values
+
+                    # Also accumulate parameter data
+                    if hasattr(episode_metrics, 'parameter_tracking') and episode_metrics.parameter_tracking:
+                        for func_name, data in episode_metrics.parameter_tracking.items():
+                            if func_name not in accumulated_metrics:
+                                accumulated_metrics[func_name] = data
+                            else:
+                                # Merge parameter data
+                                for param_name, values in data.items():
+                                    if param_name in accumulated_metrics[func_name]:
+                                        existing = accumulated_metrics[func_name][param_name]
+                                        if isinstance(existing, list) and isinstance(values, list):
+                                            existing.extend(values)
+                                        elif isinstance(existing, dict) and isinstance(values, dict):
+                                            for k, v in values.items():
+                                                if k in existing and isinstance(existing[k], list) and isinstance(v, list):
+                                                    existing[k].extend(v)
+                                                elif k in existing and isinstance(existing[k], dict) and isinstance(v, dict):
+                                                    for k2, v2 in v.items():
+                                                        if k2 in existing[k] and isinstance(existing[k][k2], list) and isinstance(v2, list):
+                                                            existing[k][k2].extend(v2)
+                                                        else:
+                                                            existing[k][k2] = v2
+                                                else:
+                                                    existing[k] = v
+                                        else:
+                                            accumulated_metrics[func_name][param_name] = values
+                                    else:
+                                        accumulated_metrics[func_name][param_name] = values.copy() if isinstance(values, list) else values
+            
             try:
                 eval_env.close()
             except Exception as e:
@@ -355,7 +453,7 @@ def test_agent(
     # --- Generate ALL Evaluation Plots ---
     if evaluation_data:
         log_info("Generating evaluation plots for test functions...", module_name)
-        plot_output_dir = checkpoint_dir / "test_plots_vectorized"
+        plot_output_dir = test_output_dir / "test_plots_vectorized"
         os.makedirs(plot_output_dir, exist_ok=True)
         plot_prefix = f"{model_filename}_TESTING_VECTORIZED"
 
@@ -379,6 +477,79 @@ def test_agent(
             log_warning("Plot generation failed. Ensure graphing.py is compatible.", module_name)
     else:
         log_warning("No evaluation data was collected, skipping plot generation.", module_name)
+
+    # --- Generate SAPSO Metric Plots ---
+    log_header("Generating SAPSO metric plots for evaluation", module_name)
+    
+    if accumulated_metrics:
+        try:
+            # Create a mock metrics calculator with accumulated data
+            class MockMetricsCalculator:
+                def __init__(self, metric_tracking, parameter_tracking):
+                    self.metric_tracking = metric_tracking
+                    self.parameter_tracking = parameter_tracking
+            
+            # Separate metric and parameter tracking data
+            metric_tracking = {}
+            parameter_tracking = {}
+            
+            for func_name, data in accumulated_metrics.items():
+                # Check if this is metric data or parameter data
+                if 'avg_step_size' in data or 'swarm_diversity' in data:
+                    metric_tracking[func_name] = data
+                if 'omega' in data or 'c1' in data:
+                    parameter_tracking[func_name] = data
+            
+            if metric_tracking or parameter_tracking:
+                mock_metrics = MockMetricsCalculator(metric_tracking, parameter_tracking)
+                plotter = SAPSOPlotter(str(test_output_dir), plot_only_averages=PLOT_ONLY_AVERAGES)
+                plotter.plot_all_metrics(mock_metrics, save_plots=True, show_plots=False)
+                log_success("SAPSO metric plots generated successfully for evaluation", module_name)
+            else:
+                log_warning("No valid metrics or parameter data found in accumulated data", module_name)
+        except Exception as e:
+            log_error(f"Error generating SAPSO metric plots: {e}", module_name)
+            log_error(traceback.format_exc(), module_name)
+    else:
+        log_warning("No metrics data available for plotting. Metrics collection may not be properly configured.", module_name)
+        log_info("To enable metrics plotting, ensure the PSO environment is properly configured with metrics tracking.", module_name)
+
+    # --- Plot Evaluation Reward Curve (Average across functions per 'epoch') ---
+    avg_rewards_per_func = {}
+    for func_index, func_class in enumerate(test_objective_function_classes):
+        func_name = func_class.__name__
+        # Calculate average only from finite rewards for that function
+        # For evaluation, we can use the rewards collected during evaluation
+        func_rewards = [r for r in all_eval_rewards if np.isfinite(r)]
+        if func_rewards:
+            avg_rewards_per_func[func_name] = np.mean(func_rewards)
+        # else: # Optionally handle functions with no valid rewards
+        #     avg_rewards_per_func[func_name] = np.nan
+
+    if avg_rewards_per_func:
+        plt.figure(figsize=(12, 6))
+        # Filter out potential NaN values if some functions had no valid rewards
+        valid_func_names = [name for name, avg in avg_rewards_per_func.items() if np.isfinite(avg)]
+        valid_avg_rewards = [avg for avg in avg_rewards_per_func.values() if np.isfinite(avg)]
+
+        if valid_func_names:
+            plt.bar(valid_func_names, valid_avg_rewards)
+            plt.title(f"SAC Avg Reward per Function (Evaluation) ({num_eval_runs} runs each) {mode_suffix}")
+            plt.xlabel("Objective Function")
+            plt.ylabel("Average Evaluation Reward")
+            plt.xticks(rotation=45)
+            plt.tight_layout()
+            
+            # Save the plot in the test directory
+            timestamped_filename = generate_timestamped_filename(f"{model_filename}_eval_rewards_per_func_static")
+            plot_path = test_output_dir / timestamped_filename
+            plt.savefig(plot_path, dpi=300, bbox_inches='tight')
+            plt.close()
+            log_success(f"Evaluation reward plot saved to: {plot_path}", module_name)
+        else:
+            log_warning("No valid function names for plotting.", module_name)
+    else:
+        log_warning("No average rewards calculated for plotting.", module_name)
 
     return evaluation_data, all_eval_rewards, final_gbests_all_runs
 
