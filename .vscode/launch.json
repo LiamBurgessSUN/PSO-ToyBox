@@ -2,62 +2,12 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Run Benchmark with Resource Monitor",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/launch_benchmark_with_monitor.py",
-            "console": "integratedTerminal",
-            "cwd": "${workspaceFolder}",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
-            "justMyCode": true,
-            "description": "Run benchmark with background resource monitoring"
-        },
-        {
-            "name": "Resource Monitor Only",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/launch_benchmark_with_monitor.py",
-            "args": ["--monitor-only"],
-            "console": "integratedTerminal",
-            "cwd": "${workspaceFolder}",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
-            "justMyCode": true,
-            "description": "Start resource monitoring without running benchmark"
-        },
-        {
             "name": "SAPSO Benchmark - Training Only",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/SAPSO_AGENT/Benchmark/train.py",
-            "args": [
-                "--env-dim", "30",
-                "--env-particles", "30",
-                "--env-max-steps", "5000",
-                "--agent-step-size", "10",
-                "--adaptive-nt-mode", "false",
-                "--nt-range", "[1, 100]",
-                "--episodes-per-function", "5",
-                "--batch-size", "64",
-                "--start-steps", "1000",
-                "--updates-per-step", "1",
-                "--save-freq-multiplier", "1",
-                "--checkpoint-base-dir", "${workspaceFolder}/SAPSO_AGENT/SAPSO/checkpoints",
-                "--hidden-dim", "256",
-                "--gamma", "1.0",
-                "--tau", "0.005",
-                "--alpha", "0.2",
-                "--actor-lr", "3e-4",
-                "--critic-lr", "3e-4",
-                "--v-clamp-ratio", "0.2",
-                "--use-velocity-clamping", "true",
-                "--convergence-patience", "50",
-                "--convergence-threshold-gbest", "1e-8",
-                "--convergence-threshold-pbest-std", "1e-6"
-            ],
+            "args": [],
+            "preLaunchTask": "clear-figures",
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}",
             "env": {
@@ -67,30 +17,11 @@
         },
         {
             "name": "SAPSO Benchmark - Testing Only",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/SAPSO_AGENT/Benchmark/test.py",
-            "args": [
-                "--env-dim", "30",
-                "--env-particles", "30",
-                "--env-max-steps", "5000",
-                "--agent-step-size", "10",
-                "--adaptive-nt-mode", "false",
-                "--nt-range", "[1, 100]",
-                "--num-eval-runs", "10",
-                "--checkpoint-base-dir", "${workspaceFolder}/SAPSO_AGENT/SAPSO/checkpoints",
-                "--hidden-dim", "256",
-                "--gamma", "1.0",
-                "--tau", "0.005",
-                "--alpha", "0.2",
-                "--actor-lr", "3e-4",
-                "--critic-lr", "3e-4",
-                "--v-clamp-ratio", "0.2",
-                "--use-velocity-clamping", "true",
-                "--convergence-patience", "50",
-                "--convergence-threshold-gbest", "1e-8",
-                "--convergence-threshold-pbest-std", "1e-6"
-            ],
+            "args": [],
+            "preLaunchTask": "clear-figures",
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}",
             "env": {
@@ -100,14 +31,16 @@
         },
         {
             "name": "SAPSO Benchmark - Full Training & Testing",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/SAPSO_AGENT/Benchmark/benchmark.py",
+            "args": [],
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}",
             "env": {
                 "PYTHONPATH": "${workspaceFolder}"
             },
+            "preLaunchTask": "clear-figures",
             "description": "Run complete SAPSO benchmark (training + testing) with enhanced metrics tracking and plotting"
         },
         {
@@ -126,81 +59,12 @@
                 "PYTHONPATH": "${workspaceFolder}"
             },
             "justMyCode": true,
+            "preLaunchTask": "clear-figures",
             "description": "Run complete SAPSO benchmark with resource monitoring and enhanced metrics tracking"
         },
         {
-            "name": "SAPSO Benchmark - Adaptive NT Training",
-            "type": "python",
-            "request": "launch",
-            "program": "${workspaceFolder}/SAPSO_AGENT/Benchmark/train.py",
-            "args": [
-                "--env-dim", "30",
-                "--env-particles", "30",
-                "--env-max-steps", "5000",
-                "--agent-step-size", "10",
-                "--adaptive-nt-mode", "true",
-                "--nt-range", "[1, 100]",
-                "--episodes-per-function", "5",
-                "--batch-size", "64",
-                "--start-steps", "1000",
-                "--updates-per-step", "1",
-                "--save-freq-multiplier", "1",
-                "--checkpoint-base-dir", "${workspaceFolder}/SAPSO_AGENT/SAPSO/checkpoints",
-                "--hidden-dim", "256",
-                "--gamma", "1.0",
-                "--tau", "0.005",
-                "--alpha", "0.2",
-                "--actor-lr", "3e-4",
-                "--critic-lr", "3e-4",
-                "--v-clamp-ratio", "0.2",
-                "--use-velocity-clamping", "true",
-                "--convergence-patience", "50",
-                "--convergence-threshold-gbest", "1e-8",
-                "--convergence-threshold-pbest-std", "1e-6"
-            ],
-            "console": "integratedTerminal",
-            "cwd": "${workspaceFolder}",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
-            "description": "Run SAPSO training with adaptive NT mode and enhanced metrics tracking"
-        },
-        {
-            "name": "SAPSO Benchmark - Adaptive NT Testing",
-            "type": "python",
-            "request": "launch",
-            "program": "${workspaceFolder}/SAPSO_AGENT/Benchmark/test.py",
-            "args": [
-                "--env-dim", "30",
-                "--env-particles", "30",
-                "--env-max-steps", "5000",
-                "--agent-step-size", "10",
-                "--adaptive-nt-mode", "true",
-                "--nt-range", "[1, 100]",
-                "--num-eval-runs", "10",
-                "--checkpoint-base-dir", "${workspaceFolder}/SAPSO_AGENT/SAPSO/checkpoints",
-                "--hidden-dim", "256",
-                "--gamma", "1.0",
-                "--tau", "0.005",
-                "--alpha", "0.2",
-                "--actor-lr", "3e-4",
-                "--critic-lr", "3e-4",
-                "--v-clamp-ratio", "0.2",
-                "--use-velocity-clamping", "true",
-                "--convergence-patience", "50",
-                "--convergence-threshold-gbest", "1e-8",
-                "--convergence-threshold-pbest-std", "1e-6"
-            ],
-            "console": "integratedTerminal",
-            "cwd": "${workspaceFolder}",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
-            "description": "Run SAPSO testing with adaptive NT mode and enhanced metrics tracking and plotting"
-        },
-        {
             "name": "Baseline PSO - Training Functions",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/Baseline/run_baseline.py",
             "args": [
@@ -227,7 +91,7 @@
         },
         {
             "name": "Baseline PSO - Testing Functions",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/Baseline/run_baseline.py",
             "args": [

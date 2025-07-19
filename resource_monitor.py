@@ -14,7 +14,7 @@ import subprocess
 from datetime import datetime
 from pathlib import Path
 import argparse
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 
 try:
     import torch
@@ -25,7 +25,7 @@ except ImportError:
 class ResourceMonitor:
     """Background resource monitoring for PSO-ToyBox benchmarks."""
     
-    def __init__(self, output_file: str = None, interval: float = 1.0):
+    def __init__(self, output_file: Optional[str] = None, interval: float = 1.0):
         """
         Initialize the resource monitor.
         

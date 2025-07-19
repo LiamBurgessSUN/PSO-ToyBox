@@ -2,13 +2,9 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "keep-plots-open",
+            "label": "clear-figures",
             "type": "shell",
-            "command": "python",
-            "args": [
-                "-c",
-                "import matplotlib.pyplot as plt; print('Plots are open. Close the plot windows manually or press Ctrl+C to exit.'); plt.show(block=True)"
-            ],
+            "command": "${workspaceFolder}/clear_figures.bat",
             "group": "build",
             "presentation": {
                 "echo": true,

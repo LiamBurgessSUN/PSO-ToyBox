@@ -14,7 +14,7 @@ from SAPSO_AGENT.SAPSO.RL.ActorCritic.Agent import SACAgent
 from SAPSO_AGENT.SAPSO.RL.Replay.ReplayBuffer import ReplayBuffer
 from SAPSO_AGENT.SAPSO.Environment.Environment import Environment
 
-from SAPSO_AGENT.SAPSO.PSO.ObjectiveFunctions.Training.Loader import objective_function_classes
+from SAPSO_AGENT.SAPSO.PSO.ObjectiveFunctions.Training.Loader import objective_function_classes as objective_functions
 from SAPSO_AGENT.Logs.logger import *
 from SAPSO_AGENT.CONFIG import *
 
@@ -65,13 +65,17 @@ def train_agent(
         convergence_patience=50,
         convergence_threshold_gbest=1e-8,
         convergence_threshold_pbest_std=1e-6,
+        enable_early_termination=ENABLE_EARLY_TERMINATION,
+        early_termination_tolerance=EARLY_TERMINATION_TOLERANCE,
+        early_termination_min_steps=EARLY_TERMINATION_MIN_STEPS,
+        early_termination_max_steps_ratio=EARLY_TERMINATION_MAX_STEPS_RATIO,
         stability_threshold=1e-3
 ):
     """Main function to train the SAC agent using PSOEnvVectorized."""
     # === Use Passed-in Hyperparameters ===
     module_name = Path(__file__).stem  # 'train'
 
-    if not objective_function_classes:
+    if not objective_functions:
         log_error("The objective_function_classes list is empty. Cannot train.", module_name)
         return  # Or raise an error
 
@@ -79,7 +83,7 @@ def train_agent(
     log_info("Creating temporary vectorized environment to get dimensions...", module_name)
     try:
         # Ensure num_particles is passed to the objective function constructor if needed
-        temp_obj_func = objective_function_classes[0](dim=env_dim)  # num_particles not needed by func directly
+        temp_obj_func = objective_functions[0](dim=env_dim)  # num_particles not needed by func directly
         # --- Use PSOEnvVectorized ---
         temp_env = Environment(
             obj_func=temp_obj_func,
@@ -94,6 +98,10 @@ def train_agent(
             convergence_patience=convergence_patience,
             convergence_threshold_gbest=convergence_threshold_gbest,
             convergence_threshold_pbest_std=convergence_threshold_pbest_std,
+            enable_early_termination=enable_early_termination,
+            early_termination_tolerance=early_termination_tolerance,
+            early_termination_min_steps=early_termination_min_steps,
+            early_termination_max_steps_ratio=early_termination_max_steps_ratio,
             # stability_threshold=stability_threshold
         )
         state_dim = temp_env.observation_space.shape[0] if temp_env.observation_space.shape else 0
@@ -109,7 +117,7 @@ def train_agent(
     device = "cuda" if torch.cuda.is_available() else "cpu"
     log_header(f"--- Training Configuration (Vectorized Env) ---", module_name)
     log_info(f"Using device: {device}", module_name)
-    log_info(f"Objective Functions: {len(objective_function_classes)}", module_name)
+    log_info(f"Objective Functions: {len(objective_functions)}", module_name)
     log_info(f"Env Dim: {env_dim}, Particles: {env_particles}, Max Steps: {env_max_steps}", module_name)
     log_info(f"Adaptive Nt Mode: {adaptive_nt_mode}", module_name)
     if not adaptive_nt_mode:
@@ -120,6 +128,9 @@ def train_agent(
     log_info(f"Batch Size: {batch_size}, Start Steps: {start_steps}", module_name)
     log_info(f"Updates Per Step: {updates_per_step}", module_name)
     log_info(f"Save Freq Multiplier (Functions): {save_freq_multiplier}", module_name)
+    log_info(f"Early Termination: {'enabled' if enable_early_termination else 'disabled'} "
+            f"(tolerance: {early_termination_tolerance:.2e}, min_steps: {early_termination_min_steps}, "
+            f"max_steps_ratio: {early_termination_max_steps_ratio})", module_name)
     log_info(f"---------------------------------------------", module_name)
 
     # --- Initialize Agent ---
@@ -218,9 +229,15 @@ def train_agent(
     train_start_time = time.time()
 
     # Outer loop: Iterate through each objective function
-    random.shuffle(objective_function_classes)
-    # for func_index, selected_func_class in enumerate(objective_function_classes):
-    for func_index, selected_func_class in enumerate(objective_function_classes[:5]):
+
+    random.shuffle(objective_functions)
+
+    if SUBSET_TRAINING:
+        objective_function_classes = objective_functions[:SUBSET_TRAINING_SIZE]
+    else:
+        objective_function_classes = objective_functions
+    
+    for func_index, selected_func_class in enumerate(objective_function_classes):
         func_name = selected_func_class.__name__
         log_header(f"===== Training on Function {func_index + 1}/{len(objective_function_classes)}: {func_name} =====",
                    module_name)
@@ -261,8 +278,16 @@ def train_agent(
                     convergence_patience=convergence_patience,
                     convergence_threshold_gbest=convergence_threshold_gbest,
                     convergence_threshold_pbest_std=convergence_threshold_pbest_std,
+                    enable_early_termination=enable_early_termination,
+                    early_termination_tolerance=early_termination_tolerance,
+                    early_termination_min_steps=early_termination_min_steps,
+                    early_termination_max_steps_ratio=early_termination_max_steps_ratio,
                     # stability_threshold=stability_threshold
-                    run_id=episode_run_id
+                    run_id=episode_run_id,
+                    # Set initial parameter values to standard PSO values
+                    initial_omega=0.729844,
+                    initial_c1=1.496180,
+                    initial_c2=1.496180
                 )
                 
                 # Initialize metrics collector with the first environment's metrics calculator
@@ -610,75 +635,5 @@ def train_agent(
     return agent, results_log
 
 if __name__ == "__main__":
-    import argparse
-    
-    parser = argparse.ArgumentParser(description="Train SAPSO agent with enhanced metrics tracking")
-    
-    # Environment parameters
-    parser.add_argument("--env-dim", type=int, default=ENV_DIM, help="Environment dimension")
-    parser.add_argument("--env-particles", type=int, default=ENV_PARTICLES, help="Number of particles")
-    parser.add_argument("--env-max-steps", type=int, default=ENV_MAX_STEPS, help="Maximum steps per episode")
-    parser.add_argument("--agent-step-size", type=int, default=AGENT_STEP_SIZE, help="Agent step size")
-    parser.add_argument("--adaptive-nt-mode", type=str, default=str(ADAPTIVE_NT_MODE), help="Adaptive NT mode (true/false)")
-    parser.add_argument("--nt-range", type=str, default=str(NT_RANGE), help="NT range as string '[min, max]'")
-    parser.add_argument("--episodes-per-function", type=int, default=EPISODES_PER_FUNCTION, help="Episodes per function")
-    parser.add_argument("--batch-size", type=int, default=BATCH_SIZE, help="Batch size")
-    parser.add_argument("--start-steps", type=int, default=START_STEPS, help="Start steps")
-    parser.add_argument("--updates-per-step", type=int, default=UPDATES_PER_STEP, help="Updates per step")
-    parser.add_argument("--save-freq-multiplier", type=int, default=SAVE_FREQ_MULTIPLIER, help="Save frequency multiplier")
-    parser.add_argument("--checkpoint-base-dir", type=str, default=CHECKPOINT_BASE_DIR, help="Checkpoint base directory")
-    
-    # Agent hyperparameters
-    parser.add_argument("--hidden-dim", type=int, default=256, help="Hidden dimension")
-    parser.add_argument("--gamma", type=float, default=1.0, help="Gamma")
-    parser.add_argument("--tau", type=float, default=0.005, help="Tau")
-    parser.add_argument("--alpha", type=float, default=0.2, help="Alpha")
-    parser.add_argument("--actor-lr", type=float, default=3e-4, help="Actor learning rate")
-    parser.add_argument("--critic-lr", type=float, default=3e-4, help="Critic learning rate")
-    
-    # PSO parameters
-    parser.add_argument("--v-clamp-ratio", type=float, default=0.2, help="Velocity clamp ratio")
-    parser.add_argument("--use-velocity-clamping", type=str, default=str(USE_VELOCITY_CLAMPING), help="Use velocity clamping (true/false)")
-    parser.add_argument("--convergence-patience", type=int, default=50, help="Convergence patience")
-    parser.add_argument("--convergence-threshold-gbest", type=float, default=1e-8, help="Convergence threshold GBest")
-    parser.add_argument("--convergence-threshold-pbest-std", type=float, default=1e-6, help="Convergence threshold PBest std")
-    
-    args = parser.parse_args()
-    
-    # Parse string arguments
-    adaptive_nt_mode = args.adaptive_nt_mode.lower() == "true"
-    use_velocity_clamping = args.use_velocity_clamping.lower() == "true"
-    
-    # Parse NT range
-    try:
-        nt_range_str = args.nt_range.strip("[]").split(",")
-        nt_range = (int(nt_range_str[0]), int(nt_range_str[1]))
-    except:
-        nt_range = NT_RANGE
-    
-    # Run training
-    train_agent(
-        env_dim=args.env_dim,
-        env_particles=args.env_particles,
-        env_max_steps=args.env_max_steps,
-        agent_step_size=args.agent_step_size,
-        adaptive_nt_mode=adaptive_nt_mode,
-        nt_range=nt_range,
-        episodes_per_function=args.episodes_per_function,
-        batch_size=args.batch_size,
-        start_steps=args.start_steps,
-        updates_per_step=args.updates_per_step,
-        save_freq_multiplier=args.save_freq_multiplier,
-        checkpoint_base_dir=args.checkpoint_base_dir,
-        hidden_dim=args.hidden_dim,
-        gamma=args.gamma,
-        tau=args.tau,
-        alpha=args.alpha,
-        actor_lr=args.actor_lr,
-        critic_lr=args.critic_lr,
-        v_clamp_ratio=args.v_clamp_ratio,
-        use_velocity_clamping=use_velocity_clamping,
-        convergence_patience=args.convergence_patience,
-        convergence_threshold_gbest=args.convergence_threshold_gbest,
-        convergence_threshold_pbest_std=args.convergence_threshold_pbest_std
-    )
+    # Run training with CONFIG.py values
+    train_agent()

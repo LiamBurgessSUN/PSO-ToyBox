@@ -28,6 +28,7 @@ if __name__ == "__main__":
     # ========================================
     log_header("Starting SAPSO Benchmark Process", module_name)
     log_header("========================================", module_name)
+    
     log_info("--- Using Hyperparameters ---", module_name)
     log_info(f"  Env Dim: {ENV_DIM}, Particles: {ENV_PARTICLES}, Max Steps: {ENV_MAX_STEPS}", module_name)
     log_info(f"  Adaptive Nt: {ADAPTIVE_NT_MODE}", module_name)

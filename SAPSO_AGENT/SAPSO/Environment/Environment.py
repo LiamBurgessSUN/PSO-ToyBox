@@ -36,8 +36,15 @@ class Environment(gym.Env):
                  convergence_patience=50,
                  convergence_threshold_gbest=1e-8,
                  convergence_threshold_pbest_std=1e-6,
+                 enable_early_termination=True,
+                 early_termination_tolerance=1e-8,
+                 early_termination_min_steps=1000,
+                 early_termination_max_steps_ratio=0.8,
                  run_id=0,  # Add run_id parameter for metrics tracking
                  # stability_threshold removed as Poli's condition is used inside metrics
+                 initial_omega=0.729844,  # Standard PSO parameter values
+                 initial_c1=1.496180,
+                 initial_c2=1.496180,
                  ):
         """
         Initializes the Vectorized PSO Environment.
@@ -59,7 +66,19 @@ class Environment(gym.Env):
         self.convergence_patience = convergence_patience
         self.convergence_threshold_gbest = convergence_threshold_gbest
         self.convergence_threshold_pbest_std = convergence_threshold_pbest_std
+        
+        # Early termination parameters
+        self.enable_early_termination = enable_early_termination
+        self.early_termination_tolerance = early_termination_tolerance
+        self.early_termination_min_steps = early_termination_min_steps
+        self.early_termination_max_steps_ratio = early_termination_max_steps_ratio
+        
         # self.stability_threshold = stability_threshold # Removed
+        
+        # Store initial parameter values
+        self.initial_omega = initial_omega
+        self.initial_c1 = initial_c1
+        self.initial_c2 = initial_c2
 
         # --- Initialize PSOVectorized ---
         try:
@@ -81,6 +100,10 @@ class Environment(gym.Env):
             self.strategy = GlobalBestStrategy(self.pso)
             self.last_gbest = self.pso.gbest_value
             log_info(f"PSOVectorized instance created successfully. Initial gbest: {self.last_gbest:.4e}", module_name)
+            log_info(f"Early termination: {'enabled' if self.enable_early_termination else 'disabled'} "
+                    f"(tolerance: {self.early_termination_tolerance:.2e}, "
+                    f"min_steps: {self.early_termination_min_steps}, "
+                    f"max_steps_ratio: {self.early_termination_max_steps_ratio})", module_name)
         except Exception as e:
             log_error(f"Failed to initialize PSOVectorized: {e}", module_name)
             log_error(traceback.format_exc(), module_name)
@@ -150,6 +173,25 @@ class Environment(gym.Env):
             # Recreate strategy with the new PSO instance
             self.strategy = GlobalBestStrategy(self.pso)
             self.last_gbest = self.pso.gbest_value
+            
+            # Set initial parameter values by running one optimization step with initial parameters
+            # This ensures the PSO starts with the specified initial parameters
+            if self.current_step == 0:  # Only on first reset or when step is 0
+                try:
+                    # Run one optimization step with initial parameters to set the initial state
+                    initial_metrics, initial_gbest, _ = self.pso.optimize_step(
+                        omega=self.initial_omega,
+                        c1=self.initial_c1,
+                        c2=self.initial_c2,
+                        step=0,
+                        function_name=self.obj_fn.__class__.__name__,
+                        run_id=self.run_id
+                    )
+                    self.last_gbest = initial_gbest
+                    log_info(f"Set initial parameters: ω={self.initial_omega:.6f}, c₁={self.initial_c1:.6f}, c₂={self.initial_c2:.6f}", module_name)
+                except Exception as e:
+                    log_warning(f"Failed to set initial parameters: {e}", module_name)
+            
             log_info(f"Environment reset complete. Initial gbest: {self.last_gbest:.4e}", module_name)
         except Exception as e:
             log_error(f"Failed to re-initialize PSOVectorized during reset: {e}", module_name)
@@ -236,6 +278,9 @@ class Environment(gym.Env):
                 break
 
             step_reward = self._calculate_relative_reward(current_gbest)
+            
+            # Store previous gbest for early termination check
+            previous_gbest = self.last_gbest
             self.last_gbest = current_gbest
             cumulative_reward += step_reward
 
@@ -250,7 +295,20 @@ class Environment(gym.Env):
                 f"  PSO Step {self.current_step}: gbest={current_gbest:.4e}, reward={step_reward:.4f}, converged={converged_this_step}, stability={step_metrics.get('stability_ratio', 'N/A')}",
                 module_name)
 
-            if converged_this_step:
+            # Check for early termination based on tolerance (only after minimum steps or max steps ratio reached)
+            if (self.enable_early_termination and np.isfinite(current_gbest) and 
+                self.current_step > 1 and 
+                (self.current_step >= self.early_termination_min_steps or 
+                 self.current_step >= self.max_steps * self.early_termination_max_steps_ratio)):
+                # Check if the improvement is below the tolerance threshold
+                improvement = abs(previous_gbest - current_gbest)
+                if improvement < self.early_termination_tolerance:
+                    terminated = True
+                    log_info(f"Early termination at step {self.current_step} due to tolerance threshold. "
+                            f"Improvement: {improvement:.2e} < {self.early_termination_tolerance:.2e}", module_name)
+                    break
+
+            if converged_this_step and self.enable_early_termination:
                 terminated = True
                 log_info(f"PSO Swarm converged at step {self.current_step}.", module_name)
                 break
@@ -295,7 +353,7 @@ class Environment(gym.Env):
         reward = 0.0
         beta = np.abs(y_old) + np.abs(y_new) + 1e-9  # Add epsilon to avoid beta=0 if both y_old,y_new=0
 
-        if y_new >= 0 and y_old >= 0:
+        if y_new > 0 and y_old > 0:
             shifted_old = y_old + beta
             shifted_new = y_new + beta
             if not np.isclose(shifted_old, 0):
@@ -308,12 +366,13 @@ class Environment(gym.Env):
             if not np.isclose(shifted_old, 0):
                 reward = 2.0 * (shifted_old - shifted_new) / shifted_old
             log_debug(f"Reward calc (Case -/-): y_old={y_old:.4e}, y_new={y_new:.4e}, reward={reward:.4f}", module_name)
-        elif y_new < 0 and y_old >= 0:
+        # elif y_new < 0 and y_old > 0:
+        else:
             reward = 1.0
             log_debug(f"Reward calc (Case +/-): y_old={y_old:.4e}, y_new={y_new:.4e}, reward=1.0", module_name)
-        else:
-            log_debug(f"Reward calc (Case -/+): y_old={y_old:.4e}, y_new={y_new:.4e}, reward=0.0", module_name)
-            reward = 0.0
+        # else:
+        #     log_debug(f"Reward calc (Case -/+): y_old={y_old:.4e}, y_new={y_new:.4e}, reward=0.0", module_name)
+        #     reward = 0.0
 
         final_reward = np.clip(reward, 0.0, 1.0)
         if not np.isclose(final_reward, reward):

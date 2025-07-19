@@ -29,7 +29,11 @@ def debug_environment():
         use_velocity_clamping=True,
         convergence_patience=10,
         convergence_threshold_gbest=1e-6,
-        convergence_threshold_pbest_std=1e-6
+        convergence_threshold_pbest_std=1e-6,
+        # Set initial parameter values to standard PSO values
+        initial_omega=0.729844,
+        initial_c1=1.496180,
+        initial_c2=1.496180
     )
     log_info("Environment created successfully", "debug_env")
     

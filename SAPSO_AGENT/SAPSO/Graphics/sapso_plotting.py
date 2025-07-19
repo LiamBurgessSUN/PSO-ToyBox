@@ -10,7 +10,7 @@ from typing import Dict, List, Tuple, Optional, Union
 from datetime import datetime
 
 from SAPSO_AGENT.Logs.logger import *
-from SAPSO_AGENT.CONFIG import ENV_MAX_STEPS
+from SAPSO_AGENT.CONFIG import ENV_MAX_STEPS, SAPSO_PLOT_MODE
 
 # --- Module Name for Logging ---
 module_name = Path(__file__).stem  # Gets 'sapso_plotting'
@@ -239,7 +239,17 @@ class SAPSOPlotter:
         std = np.nanstd(arr, axis=0)
         return avg, std
 
-    def plot_average_velocity(self, metrics_calculator, function_names=None, save_plots=True, show_plots=False):
+    def _normalize_array(self, arr):
+        arr = np.array(arr)
+        min_val = np.nanmin(arr)
+        max_val = np.nanmax(arr)
+        if np.isclose(max_val, min_val):
+            return np.zeros_like(arr)
+        return (arr - min_val) / (max_val - min_val)
+
+    def plot_average_velocity(self, metrics_calculator, function_names=None, save_plots=True, show_plots=False, mode=None):
+        if mode is None:
+            mode = SAPSO_PLOT_MODE
         if function_names is None:
             function_names = list(metrics_calculator.metric_tracking.keys())
         step_size = ENV_MAX_STEPS
@@ -251,37 +261,46 @@ class SAPSOPlotter:
         if not all_arrs:
             log_warning('No velocity data for averaging', self.module_name)
             return
-        # Concatenate all runs, then average per step
         all_arrs = np.concatenate(all_arrs)
-        avg_per_step, std_per_step = self._reshape_and_average(all_arrs, step_size)
-        steps = np.arange(step_size)
-        fig, ax = plt.subplots(1, 1, figsize=(10, 6))
-        ax.semilogy(steps, avg_per_step, label='Average Velocity Magnitude', color='blue', linewidth=2)
-        ax.fill_between(steps, avg_per_step-std_per_step, avg_per_step+std_per_step, color='blue', alpha=0.2, label='Std Dev')
-        ax.set_title('Average Particle Velocity (Averaged Across All Functions)')
-        ax.set_xlabel('PSO Step')
-        ax.set_ylabel('Average Velocity Magnitude (log scale)')
-        ax.legend()
-        ax.grid(True, alpha=0.3)
-        final_velocity = avg_per_step[-1] if len(avg_per_step) > 0 else 0
-        mean_velocity = np.nanmean(avg_per_step) if len(avg_per_step) > 0 else 0
-        max_velocity = np.nanmax(avg_per_step) if len(avg_per_step) > 0 else 0
-        min_velocity = np.nanmin(avg_per_step) if len(avg_per_step) > 0 else 0
-        stats_text = f'Final Velocity: {final_velocity:.2e}\nMean Velocity: {mean_velocity:.2e}\nMax Velocity: {max_velocity:.2e}\nMin Velocity: {min_velocity:.2e}'
-        ax.text(0.02, 0.98, stats_text, transform=ax.transAxes, fontsize=10,
-                verticalalignment='top', bbox=dict(boxstyle='round', facecolor='lightblue', alpha=0.8))
-        plt.tight_layout()
-        if save_plots and self.checkpoint_base_dir is not None:
-            checkpoint_dir = Path(self.checkpoint_base_dir) / 'average_velocity'
-            checkpoint_dir.mkdir(parents=True, exist_ok=True)
-            timestamped_filename = generate_timestamped_filename('average_velocity_average')
-            plt.savefig(checkpoint_dir / timestamped_filename, dpi=300, bbox_inches='tight')
-            log_success(f'Average velocity plot saved: {timestamped_filename}', self.module_name)
-        if show_plots:
-            plt.show()
-        plt.close()
+        for plot_mode in (['original', 'normalized'] if mode == 'both' else [mode]):
+            arr_to_plot = all_arrs.copy()
+            if plot_mode == 'normalized':
+                arr_to_plot = self._normalize_array(arr_to_plot)
+            avg_per_step, std_per_step = self._reshape_and_average(arr_to_plot, step_size)
+            steps = np.arange(step_size)
+            fig, ax = plt.subplots(1, 1, figsize=(10, 6))
+            ax.semilogy(steps, avg_per_step, label='Average Velocity Magnitude', color='blue', linewidth=2)
+            ax.fill_between(steps, avg_per_step-std_per_step, avg_per_step+std_per_step, color='blue', alpha=0.2, label='Std Dev')
+            title = 'Average Particle Velocity (Averaged Across All Functions)'
+            if plot_mode == 'normalized':
+                title += ' (Normalized)'
+            ax.set_title(title)
+            ax.set_xlabel('PSO Step')
+            ax.set_ylabel('Average Velocity Magnitude (log scale)' + (' (Normalized)' if plot_mode == 'normalized' else ''))
+            ax.legend()
+            ax.grid(True, alpha=0.3)
+            final_velocity = avg_per_step[-1] if len(avg_per_step) > 0 else 0
+            mean_velocity = np.nanmean(avg_per_step) if len(avg_per_step) > 0 else 0
+            max_velocity = np.nanmax(avg_per_step) if len(avg_per_step) > 0 else 0
+            min_velocity = np.nanmin(avg_per_step) if len(avg_per_step) > 0 else 0
+            stats_text = f'Final Velocity: {final_velocity:.2e}\nMean Velocity: {mean_velocity:.2e}\nMax Velocity: {max_velocity:.2e}\nMin Velocity: {min_velocity:.2e}'
+            ax.text(0.02, 0.98, stats_text, transform=ax.transAxes, fontsize=10,
+                    verticalalignment='top', bbox=dict(boxstyle='round', facecolor='lightblue', alpha=0.8))
+            plt.tight_layout()
+            if save_plots and self.checkpoint_base_dir is not None:
+                checkpoint_dir = Path(self.checkpoint_base_dir) / 'average_velocity'
+                checkpoint_dir.mkdir(parents=True, exist_ok=True)
+                suffix = '_normalized' if plot_mode == 'normalized' else ''
+                timestamped_filename = generate_timestamped_filename(f'average_velocity_average{suffix}')
+                plt.savefig(checkpoint_dir / timestamped_filename, dpi=300, bbox_inches='tight')
+                log_success(f'Average velocity plot saved: {timestamped_filename}', self.module_name)
+            if show_plots:
+                plt.show()
+            plt.close()
 
-    def plot_swarm_diversity(self, metrics_calculator, function_names=None, save_plots=True, show_plots=False, clip_std_dev=False):
+    def plot_swarm_diversity(self, metrics_calculator, function_names=None, save_plots=True, show_plots=False, clip_std_dev=False, mode=None):
+        if mode is None:
+            mode = SAPSO_PLOT_MODE
         if function_names is None:
             function_names = list(metrics_calculator.metric_tracking.keys())
         step_size = ENV_MAX_STEPS
@@ -294,35 +313,45 @@ class SAPSOPlotter:
             log_warning('No diversity data for averaging', self.module_name)
             return
         all_arrs = np.concatenate(all_arrs)
-        avg_per_step, std_per_step = self._reshape_and_average(all_arrs, step_size)
-        steps = np.arange(step_size)
-        fig, ax = plt.subplots(1, 1, figsize=(10, 6))
-        ax.semilogy(steps, avg_per_step, label='Swarm Diversity', color='green', linewidth=2)
-        ax.fill_between(steps, avg_per_step-std_per_step, avg_per_step+std_per_step, color='green', alpha=0.2, label='Std Dev')
-        ax.set_title('Swarm Diversity (Averaged Across All Functions)')
-        ax.set_xlabel('PSO Step')
-        ax.set_ylabel('Swarm Diversity (log scale)')
-        ax.legend()
-        ax.grid(True, alpha=0.3)
-        final_diversity = avg_per_step[-1] if len(avg_per_step) > 0 else 0
-        mean_diversity = np.nanmean(avg_per_step) if len(avg_per_step) > 0 else 0
-        max_diversity = np.nanmax(avg_per_step) if len(avg_per_step) > 0 else 0
-        min_diversity = np.nanmin(avg_per_step) if len(avg_per_step) > 0 else 0
-        stats_text = f'Final Diversity: {final_diversity:.4f}\nMean Diversity: {mean_diversity:.4f}\nMax Diversity: {max_diversity:.4f}\nMin Diversity: {min_diversity:.4f}'
-        ax.text(0.02, 0.98, stats_text, transform=ax.transAxes, fontsize=10,
-                verticalalignment='top', bbox=dict(boxstyle='round', facecolor='lightgreen', alpha=0.8))
-        plt.tight_layout()
-        if save_plots and self.checkpoint_base_dir is not None:
-            checkpoint_dir = Path(self.checkpoint_base_dir) / 'swarm_diversity'
-            checkpoint_dir.mkdir(parents=True, exist_ok=True)
-            timestamped_filename = generate_timestamped_filename('swarm_diversity_average')
-            plt.savefig(checkpoint_dir / timestamped_filename, dpi=300, bbox_inches='tight')
-            log_success(f'Swarm diversity plot saved: {timestamped_filename}', self.module_name)
-        if show_plots:
-            plt.show()
-        plt.close()
+        for plot_mode in (['original', 'normalized'] if mode == 'both' else [mode]):
+            arr_to_plot = all_arrs.copy()
+            if plot_mode == 'normalized':
+                arr_to_plot = self._normalize_array(arr_to_plot)
+            avg_per_step, std_per_step = self._reshape_and_average(arr_to_plot, step_size)
+            steps = np.arange(step_size)
+            fig, ax = plt.subplots(1, 1, figsize=(10, 6))
+            ax.semilogy(steps, avg_per_step, label='Swarm Diversity', color='green', linewidth=2)
+            ax.fill_between(steps, avg_per_step-std_per_step, avg_per_step+std_per_step, color='green', alpha=0.2, label='Std Dev')
+            title = 'Swarm Diversity (Averaged Across All Functions)'
+            if plot_mode == 'normalized':
+                title += ' (Normalized)'
+            ax.set_title(title)
+            ax.set_xlabel('PSO Step')
+            ax.set_ylabel('Swarm Diversity (log scale)' + (' (Normalized)' if plot_mode == 'normalized' else ''))
+            ax.legend()
+            ax.grid(True, alpha=0.3)
+            final_diversity = avg_per_step[-1] if len(avg_per_step) > 0 else 0
+            mean_diversity = np.nanmean(avg_per_step) if len(avg_per_step) > 0 else 0
+            max_diversity = np.nanmax(avg_per_step) if len(avg_per_step) > 0 else 0
+            min_diversity = np.nanmin(avg_per_step) if len(avg_per_step) > 0 else 0
+            stats_text = f'Final Diversity: {final_diversity:.4f}\nMean Diversity: {mean_diversity:.4f}\nMax Diversity: {max_diversity:.4f}\nMin Diversity: {min_diversity:.4f}'
+            ax.text(0.02, 0.98, stats_text, transform=ax.transAxes, fontsize=10,
+                    verticalalignment='top', bbox=dict(boxstyle='round', facecolor='lightgreen', alpha=0.8))
+            plt.tight_layout()
+            if save_plots and self.checkpoint_base_dir is not None:
+                checkpoint_dir = Path(self.checkpoint_base_dir) / 'swarm_diversity'
+                checkpoint_dir.mkdir(parents=True, exist_ok=True)
+                suffix = '_normalized' if plot_mode == 'normalized' else ''
+                timestamped_filename = generate_timestamped_filename(f'swarm_diversity_average{suffix}')
+                plt.savefig(checkpoint_dir / timestamped_filename, dpi=300, bbox_inches='tight')
+                log_success(f'Swarm diversity plot saved: {timestamped_filename}', self.module_name)
+            if show_plots:
+                plt.show()
+            plt.close()
 
-    def plot_average_parameters(self, metrics_calculator, function_names=None, save_plots=True, show_plots=False):
+    def plot_average_parameters(self, metrics_calculator, function_names=None, save_plots=True, show_plots=False, mode=None):
+        if mode is None:
+            mode = SAPSO_PLOT_MODE
         if function_names is None:
             function_names = list(metrics_calculator.parameter_tracking.keys())
         step_size = ENV_MAX_STEPS
@@ -332,32 +361,43 @@ class SAPSOPlotter:
                 all_omega.extend(metrics_calculator.parameter_tracking[func_name]['omega'])
                 all_c1.extend(metrics_calculator.parameter_tracking[func_name]['c1'])
                 all_c2.extend(metrics_calculator.parameter_tracking[func_name]['c2'])
-        avg_omega, _ = self._reshape_and_average(all_omega, step_size)
-        avg_c1, _ = self._reshape_and_average(all_c1, step_size)
-        avg_c2, _ = self._reshape_and_average(all_c2, step_size)
-        steps = np.arange(step_size)
-        fig, ax = plt.subplots(1, 1, figsize=(12, 8))
-        ax.plot(steps, avg_omega, label='ω (Inertia)', color='blue')
-        ax.plot(steps, avg_c1, label='c₁ (Cognitive)', color='red')
-        ax.plot(steps, avg_c2, label='c₂ (Social)', color='green')
-        ax.set_xlabel('PSO Step')
-        ax.set_ylabel('Average Parameter Value')
-        ax.set_title('Average Control Parameters Across All Functions')
-        ax.legend()
-        ax.grid(True, alpha=0.3)
-        plt.tight_layout()
-        if save_plots and self.checkpoint_base_dir is not None:
-            checkpoint_dir = Path(self.checkpoint_base_dir) / 'average_parameters'
-            checkpoint_dir.mkdir(parents=True, exist_ok=True)
-            timestamped_filename = generate_timestamped_filename(f'sapso_average_parameters_{len(function_names)}_functions')
-            plot_path = checkpoint_dir / timestamped_filename
-            plt.savefig(plot_path, dpi=300, bbox_inches='tight')
-            log_success(f'Average parameter plot saved to {plot_path}', self.module_name)
-        if show_plots:
-            plt.show()
-        plt.close()
+        for plot_mode in (['original', 'normalized'] if mode == 'both' else [mode]):
+            arr_to_plot_omega = all_omega.copy()
+            arr_to_plot_c1 = all_c1.copy()
+            arr_to_plot_c2 = all_c2.copy()
+            if plot_mode == 'normalized':
+                arr_to_plot_omega = self._normalize_array(arr_to_plot_omega)
+                arr_to_plot_c1 = self._normalize_array(arr_to_plot_c1)
+                arr_to_plot_c2 = self._normalize_array(arr_to_plot_c2)
+            avg_omega, _ = self._reshape_and_average(arr_to_plot_omega, step_size)
+            avg_c1, _ = self._reshape_and_average(arr_to_plot_c1, step_size)
+            avg_c2, _ = self._reshape_and_average(arr_to_plot_c2, step_size)
+            steps = np.arange(step_size)
+            fig, ax = plt.subplots(1, 1, figsize=(12, 8))
+            ax.plot(steps, avg_omega, label='ω (Inertia)', color='blue')
+            ax.plot(steps, avg_c1, label='c₁ (Cognitive)', color='red')
+            ax.plot(steps, avg_c2, label='c₂ (Social)', color='green')
+            ax.set_xlabel('PSO Step')
+            ax.set_ylabel('Average Parameter Value' + (' (Normalized)' if plot_mode == 'normalized' else ''))
+            ax.set_title('Average Control Parameters Across All Functions')
+            ax.legend()
+            ax.grid(True, alpha=0.3)
+            plt.tight_layout()
+            if save_plots and self.checkpoint_base_dir is not None:
+                checkpoint_dir = Path(self.checkpoint_base_dir) / 'average_parameters'
+                checkpoint_dir.mkdir(parents=True, exist_ok=True)
+                suffix = '_normalized' if plot_mode == 'normalized' else ''
+                timestamped_filename = generate_timestamped_filename(f'sapso_average_parameters_{len(function_names)}_functions{suffix}')
+                plot_path = checkpoint_dir / timestamped_filename
+                plt.savefig(plot_path, dpi=300, bbox_inches='tight')
+                log_success(f'Average parameter plot saved to {plot_path}', self.module_name)
+            if show_plots:
+                plt.show()
+            plt.close()
 
-    def plot_stability_condition(self, metrics_calculator, function_names=None, save_plots=True, show_plots=False):
+    def plot_stability_condition(self, metrics_calculator, function_names=None, save_plots=True, show_plots=False, mode=None):
+        if mode is None:
+            mode = SAPSO_PLOT_MODE
         if function_names is None:
             function_names = list(metrics_calculator.parameter_tracking.keys())
         step_size = ENV_MAX_STEPS
@@ -367,50 +407,60 @@ class SAPSOPlotter:
                 all_omega.extend(metrics_calculator.parameter_tracking[func_name]['omega'])
                 all_c1.extend(metrics_calculator.parameter_tracking[func_name]['c1'])
                 all_c2.extend(metrics_calculator.parameter_tracking[func_name]['c2'])
-        avg_omega, _ = self._reshape_and_average(all_omega, step_size)
-        avg_c1, _ = self._reshape_and_average(all_c1, step_size)
-        avg_c2, _ = self._reshape_and_average(all_c2, step_size)
-        lhs = avg_c1 + avg_c2
-        denominator = 7.0 - 5.0 * avg_omega
-        rhs = np.where((-1.0 <= avg_omega) & (avg_omega <= 1.0) & (~np.isclose(denominator, 0)), 24.0 * (1.0 - avg_omega**2) / denominator, np.nan)
-        is_stable = np.where((-1.0 <= avg_omega) & (avg_omega <= 1.0) & (~np.isclose(denominator, 0)), (lhs < rhs).astype(float), 0.0)
-        steps = np.arange(step_size)
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8))
-        ax1.plot(steps, lhs, label=r"$c_1 + c_2$", color='blue', linewidth=2)
-        ax1.plot(steps, rhs, label=r"$\frac{24(1-w^2)}{7-5w}$", color='orange', linewidth=2)
-        ax1.set_title('Stability Condition (Averaged Across All Functions)')
-        ax1.set_xlabel('PSO Step')
-        ax1.set_ylabel('Value')
-        ax1.legend()
-        ax1.grid(True, alpha=0.3)
-        ax1.fill_between(steps, 0, rhs, alpha=0.2, color='green', label='Stable Region')
-        ax2.plot(steps, is_stable, label='Fraction of Stable Particles', color='red', linewidth=2)
-        ax2.set_title('Fraction of Stable Particles (Averaged Across All Functions)')
-        ax2.set_xlabel('PSO Step')
-        ax2.set_ylabel('Stability Fraction')
-        ax2.set_ylim(0, 1)
-        ax2.legend()
-        ax2.grid(True, alpha=0.3)
-        final_stability = is_stable[-1] if len(is_stable) > 0 else 0
-        stats_text = f'Final Stability: {final_stability:.3f}\nMean Stability: {np.nanmean(is_stable):.3f}'
-        ax2.text(0.02, 0.98, stats_text, transform=ax2.transAxes, fontsize=10,
-                verticalalignment='top', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8))
-        plt.tight_layout()
-        if save_plots and self.checkpoint_base_dir is not None:
-            checkpoint_dir = Path(self.checkpoint_base_dir) / 'stability_condition'
-            checkpoint_dir.mkdir(parents=True, exist_ok=True)
-            timestamped_filename = generate_timestamped_filename('stability_condition_average')
-            plt.savefig(checkpoint_dir / timestamped_filename, dpi=300, bbox_inches='tight')
-            log_success(f'Stability condition plot saved: {timestamped_filename}', self.module_name)
-        if show_plots:
-            plt.show()
-        plt.close()
+        for plot_mode in (['original', 'normalized'] if mode == 'both' else [mode]):
+            arr_to_plot_omega = all_omega.copy()
+            arr_to_plot_c1 = all_c1.copy()
+            arr_to_plot_c2 = all_c2.copy()
+            if plot_mode == 'normalized':
+                arr_to_plot_omega = self._normalize_array(arr_to_plot_omega)
+                arr_to_plot_c1 = self._normalize_array(arr_to_plot_c1)
+                arr_to_plot_c2 = self._normalize_array(arr_to_plot_c2)
+            avg_omega, _ = self._reshape_and_average(arr_to_plot_omega, step_size)
+            avg_c1, _ = self._reshape_and_average(arr_to_plot_c1, step_size)
+            avg_c2, _ = self._reshape_and_average(arr_to_plot_c2, step_size)
+            lhs = avg_c1 + avg_c2
+            denominator = 7.0 - 5.0 * avg_omega
+            rhs = np.where((-1.0 <= avg_omega) & (avg_omega <= 1.0) & (~np.isclose(denominator, 0)), 24.0 * (1.0 - avg_omega**2) / denominator, np.nan)
+            is_stable = np.where((-1.0 <= avg_omega) & (avg_omega <= 1.0) & (~np.isclose(denominator, 0)), (lhs < rhs).astype(float), 0.0)
+            steps = np.arange(step_size)
+            fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8))
+            ax1.plot(steps, lhs, label=r"$c_1 + c_2$", color='blue', linewidth=2)
+            ax1.plot(steps, rhs, label=r"$\frac{24(1-w^2)}{7-5w}$", color='orange', linewidth=2)
+            ax1.set_title('Stability Condition (Averaged Across All Functions)' + (' (Normalized)' if plot_mode == 'normalized' else ''))
+            ax1.set_xlabel('PSO Step')
+            ax1.set_ylabel('Value' + (' (Normalized)' if plot_mode == 'normalized' else ''))
+            ax1.legend()
+            ax1.grid(True, alpha=0.3)
+            ax1.fill_between(steps, 0, rhs, alpha=0.2, color='green', label='Stable Region')
+            ax2.plot(steps, is_stable, label='Fraction of Stable Particles', color='red', linewidth=2)
+            ax2.set_title('Fraction of Stable Particles (Averaged Across All Functions)' + (' (Normalized)' if plot_mode == 'normalized' else ''))
+            ax2.set_xlabel('PSO Step')
+            ax2.set_ylabel('Stability Fraction' + (' (Normalized)' if plot_mode == 'normalized' else ''))
+            ax2.set_ylim(0, 1)
+            ax2.legend()
+            ax2.grid(True, alpha=0.3)
+            final_stability = is_stable[-1] if len(is_stable) > 0 else 0
+            stats_text = f'Final Stability: {final_stability:.3f}\nMean Stability: {np.nanmean(is_stable):.3f}'
+            ax2.text(0.02, 0.98, stats_text, transform=ax2.transAxes, fontsize=10,
+                    verticalalignment='top', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8))
+            plt.tight_layout()
+            if save_plots and self.checkpoint_base_dir is not None:
+                checkpoint_dir = Path(self.checkpoint_base_dir) / 'stability_condition'
+                checkpoint_dir.mkdir(parents=True, exist_ok=True)
+                suffix = '_normalized' if plot_mode == 'normalized' else ''
+                timestamped_filename = generate_timestamped_filename(f'stability_condition_average{suffix}')
+                plt.savefig(checkpoint_dir / timestamped_filename, dpi=300, bbox_inches='tight')
+                log_success(f'Stability condition plot saved: {timestamped_filename}', self.module_name)
+            if show_plots:
+                plt.show()
+            plt.close()
     
     def plot_infeasible_particles(self, 
                                  metrics_calculator,
                                  function_names: Optional[List[str]] = None,
                                  save_plots: bool = True,
-                                 show_plots: bool = False) -> None:
+                                 show_plots: bool = False,
+                                 mode=None) -> None:
         """
         Plot the fraction of infeasible particles over optimization steps for each function.
         
@@ -496,34 +546,39 @@ class SAPSOPlotter:
             log_warning('No infeasible ratio data for averaging', self.module_name)
             return
         all_arrs = np.concatenate(all_arrs)
-        avg_per_step, std_per_step = self._reshape_and_average(all_arrs, step_size)
-        steps = np.arange(step_size)
-        fig, ax = plt.subplots(1, 1, figsize=(10, 6))
-        ax.plot(steps, avg_per_step, label='Fraction of Infeasible Particles', color='red', linewidth=2)
-        ax.fill_between(steps, avg_per_step-std_per_step, avg_per_step+std_per_step, color='red', alpha=0.2, label='Std Dev')
-        ax.set_title('Infeasible Particles (Averaged Across All Functions)')
-        ax.set_xlabel('PSO Step')
-        ax.set_ylabel('Infeasible Fraction')
-        ax.set_ylim(0, 1)
-        ax.legend()
-        ax.grid(True, alpha=0.3)
-        final_infeasible = avg_per_step[-1] if len(avg_per_step) > 0 else 0
-        mean_infeasible = np.nanmean(avg_per_step) if len(avg_per_step) > 0 else 0
-        max_infeasible = np.nanmax(avg_per_step) if len(avg_per_step) > 0 else 0
-        min_infeasible = np.nanmin(avg_per_step) if len(avg_per_step) > 0 else 0
-        stats_text = f'Final Infeasible: {final_infeasible:.3f}\nMean Infeasible: {mean_infeasible:.3f}\nMax Infeasible: {max_infeasible:.3f}\nMin Infeasible: {min_infeasible:.3f}'
-        ax.text(0.02, 0.98, stats_text, transform=ax.transAxes, fontsize=10,
-                verticalalignment='top', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8))
-        plt.tight_layout()
-        if save_plots and self.checkpoint_base_dir is not None:
-            checkpoint_dir = Path(self.checkpoint_base_dir) / "infeasible_particles"
-            checkpoint_dir.mkdir(parents=True, exist_ok=True)
-            timestamped_filename = generate_timestamped_filename("infeasible_particles_average")
-            plt.savefig(checkpoint_dir / timestamped_filename, dpi=300, bbox_inches='tight')
-            log_success(f"Average infeasible particles plot saved: {timestamped_filename}", self.module_name)
-        if show_plots:
-            plt.show()
-        plt.close()
+        for plot_mode in (['original', 'normalized'] if mode == 'both' else [mode]):
+            arr_to_plot = all_arrs.copy()
+            if plot_mode == 'normalized':
+                arr_to_plot = self._normalize_array(arr_to_plot)
+            avg_per_step, std_per_step = self._reshape_and_average(arr_to_plot, step_size)
+            steps = np.arange(step_size)
+            fig, ax = plt.subplots(1, 1, figsize=(10, 6))
+            ax.plot(steps, avg_per_step, label='Fraction of Infeasible Particles', color='red', linewidth=2)
+            ax.fill_between(steps, avg_per_step-std_per_step, avg_per_step+std_per_step, color='red', alpha=0.2, label='Std Dev')
+            ax.set_title('Infeasible Particles (Averaged Across All Functions)' + (' (Normalized)' if plot_mode == 'normalized' else ''))
+            ax.set_xlabel('PSO Step')
+            ax.set_ylabel('Infeasible Fraction' + (' (Normalized)' if plot_mode == 'normalized' else ''))
+            ax.set_ylim(0, 1)
+            ax.legend()
+            ax.grid(True, alpha=0.3)
+            final_infeasible = avg_per_step[-1] if len(avg_per_step) > 0 else 0
+            mean_infeasible = np.nanmean(avg_per_step) if len(avg_per_step) > 0 else 0
+            max_infeasible = np.nanmax(avg_per_step) if len(avg_per_step) > 0 else 0
+            min_infeasible = np.nanmin(avg_per_step) if len(avg_per_step) > 0 else 0
+            stats_text = f'Final Infeasible: {final_infeasible:.3f}\nMean Infeasible: {mean_infeasible:.3f}\nMax Infeasible: {max_infeasible:.3f}\nMin Infeasible: {min_infeasible:.3f}'
+            ax.text(0.02, 0.98, stats_text, transform=ax.transAxes, fontsize=10,
+                    verticalalignment='top', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8))
+            plt.tight_layout()
+            if save_plots and self.checkpoint_base_dir is not None:
+                checkpoint_dir = Path(self.checkpoint_base_dir) / "infeasible_particles"
+                checkpoint_dir.mkdir(parents=True, exist_ok=True)
+                suffix = '_normalized' if plot_mode == 'normalized' else ''
+                timestamped_filename = generate_timestamped_filename(f"infeasible_particles_average{suffix}")
+                plt.savefig(checkpoint_dir / timestamped_filename, dpi=300, bbox_inches='tight')
+                log_success(f"Average infeasible particles plot saved: {timestamped_filename}", self.module_name)
+            if show_plots:
+                plt.show()
+            plt.close()
 
     def plot_all_metrics(self, 
                          metrics_calculator,

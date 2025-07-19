@@ -5,6 +5,12 @@ ENV_PARTICLES = 30
 ENV_MAX_STEPS = 5000  # Max PSO steps per env run
 USE_VELOCITY_CLAMPING = False
 
+# --- Early Termination Config ---
+ENABLE_EARLY_TERMINATION = False  # Whether to terminate early if convergence tolerance is reached
+EARLY_TERMINATION_TOLERANCE = 1e-8  # Tolerance for early termination (same as convergence_threshold_gbest)
+EARLY_TERMINATION_MIN_STEPS = 1000  # Minimum steps before early termination can be enabled
+EARLY_TERMINATION_MAX_STEPS_RATIO = 0.8  # Ratio of max_steps before early termination can be enabled
+
 # --- Agent/Env Interaction Config ---
 AGENT_STEP_SIZE = 125  # Used for fixed Nt mode
 ADAPTIVE_NT_MODE = False  # Set to True to enable adaptive Nt
@@ -45,3 +51,8 @@ CHECKPOINT_BASE_DIR = "Figures/"  # Relative path for models/checkpoints
 
 # --- Plotting Config ---
 PLOT_ONLY_AVERAGES = True  # If True, only generate average plots across all functions, skip individual function plots
+SAPSO_PLOT_MODE = 'both'  # Options: 'original', 'normalized', 'both' for SAPSOPlotter plots
+
+# Subset Training
+SUBSET_TRAINING = False
+SUBSET_TRAINING_SIZE = 5

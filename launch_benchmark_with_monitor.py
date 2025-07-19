@@ -11,6 +11,7 @@ import subprocess
 import threading
 import signal
 from pathlib import Path
+from typing import Optional
 from resource_monitor import ResourceMonitor
 
 def signal_handler(signum, frame):
@@ -20,7 +21,7 @@ def signal_handler(signum, frame):
 
 def run_benchmark_with_background_monitor(benchmark_script: str = "SAPSO_AGENT/Benchmark/benchmark.py",
                                         monitor_interval: float = 1.0,
-                                        output_file: str = None):
+                                        output_file: Optional[str] = None):
     """
     Launch benchmark with background resource monitoring.
     
@@ -76,6 +77,8 @@ def run_benchmark_with_background_monitor(benchmark_script: str = "SAPSO_AGENT/B
         print("-" * 40)
         
         while True:
+            if process.stdout is None:
+                break
             output = process.stdout.readline()
             if output == '' and process.poll() is not None:
                 break
